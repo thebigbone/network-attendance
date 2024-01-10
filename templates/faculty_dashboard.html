@@ -9,8 +9,8 @@
                 <h1 class="card-title">Faculty Dashboard</h1>
             </div>
             <div class="card-body">
-				{% if msg is defined %}
-                     <div class="alert alert-danger">{{ msg }}</div>
+				{% if date_error %}
+                     <div class="alert alert-danger">{{ date_error }}</div>
                  {% endif %}
                 <form action="{{ url_for('start_attendance') }}" method="post">
                     <div class="form-group">

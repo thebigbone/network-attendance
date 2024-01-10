@@ -111,7 +111,11 @@ def faculty_dashboard():
             teaching_class = result[0]
             subjects = teaching_class.split(',') if teaching_class else []
 
-        return render_template('faculty_dashboard.html', subjects=subjects)
+        date_error = request.args.get('date_error')
+
+        app.logger.info(date_error)
+
+        return render_template('faculty_dashboard.html', subjects=subjects, date_error=date_error)
     else:
         return redirect('/faculty_login')
 
@@ -139,8 +143,10 @@ def start_attendance():
     result = cursor.fetchone()
     cursor.close()
     if result:
-        msg='Attendance is taken for this date!! Change date.'
-        return render_template('faculty_dashboard.html',msg=msg)
+        date_error='Attendance is taken for this date! Change date.'
+        #return render_template('faculty_dashboard.html',msg=msg)
+
+        return redirect(url_for('faculty_dashboard', date_error=date_error))
     
     if given_time:
         session['time'] = given_time
