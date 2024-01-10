@@ -99,10 +99,6 @@ def faculty_login():
 def faculty_dashboard():
     
     if 'faculty_id' in session:
-        if request.method == 'POST':
-            selected_subject = request.form.get('subject')
-            session['selected_subject'] = selected_subject 
-            
             
         faculty_id = session['faculty_id']
         cursor = mysql.connection.cursor()
@@ -124,11 +120,28 @@ def faculty_dashboard():
 def start_attendance():
 
     faculty_id = session.get('faculty_id')
+    app.logger.info("Fac id: %s", faculty_id)
+    
+    selected_subject = request.form.get('subject')
+    session['selected_subject'] = selected_subject
+    app.logger.info("subject: %s", selected_subject)
+   
     date = request.form.get('date')
     app.logger.info("SESSION SET DATE: %s",date)
     session['date'] = date
+    
     given_time = request.form.get('time')
     app.logger.info("time: %s", given_time)
+   
+    
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=%s AND COLUMN_NAME=%s", (selected_subject, date))
+    result = cursor.fetchone()
+    cursor.close()
+    if result:
+        msg='Attendance is taken for this date!! Change date.'
+        return render_template('faculty_dashboard.html',msg=msg)
+    
     if given_time:
         session['time'] = given_time
         timer_duration = int(given_time)
