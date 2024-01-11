@@ -11,7 +11,7 @@ app.secret_key = 'ekdjo39ijdowdpwmdo39dowdmw'  # Set your own secret key
 # Configure MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_PASSWORD'] = 'akshar'
 app.config['MYSQL_DB'] = 'wifiattendance'
 
 mysql = MySQL(app)
@@ -59,7 +59,7 @@ def faculty_register():
         
         #creating teaching class table
         for classname in teaching_class:
-            create_table_query = f"CREATE TABLE {classname} (enrollment INT PRIMARY KEY, name VARCHAR(255), faculty_id VARCHAR(255), FOREIGN KEY (faculty_id) REFERENCES faculty_accounts(faculty_id))"
+            create_table_query = f"CREATE TABLE {classname} (enrollment BIGINT PRIMARY KEY, name VARCHAR(255), faculty_id VARCHAR(255), percentage DECIMAL(5,2), FOREIGN KEY (faculty_id) REFERENCES faculty_accounts(faculty_id))"
             cursor.execute(create_table_query)
         
         #creating table to store pass keys
@@ -144,7 +144,6 @@ def start_attendance():
     cursor.close()
     if result:
         date_error='Attendance is taken for this date! Change date.'
-        #return render_template('faculty_dashboard.html',msg=msg)
 
         return redirect(url_for('faculty_dashboard', date_error=date_error))
     
@@ -157,6 +156,7 @@ def start_attendance():
         
         selected_subject = request.form.get('subject')
         session['selected_subject'] = selected_subject
+        
 
         cursor = mysql.connection.cursor()
         cursor.execute(f"INSERT INTO {faculty_id}_keys (attendance_id, atten_id_date, faculty_id) VALUES (%s, %s, %s)", (attendance_id, date, faculty_id))
@@ -180,27 +180,67 @@ def stop_attendance():
         faculty_id = session.get("faculty_id")
     
         cursor = mysql.connection.cursor()
-        #delete all the keys
-        cursor.execute(f"DELETE FROM {faculty_id}_keys where 1")
+
+        # Delete all the keys
+        cursor.execute(f"DELETE FROM {faculty_id}_keys WHERE 1")
         mysql.connection.commit()
         
-        #student data
-        cursor.execute(f"SELECT enrollment, name, `{date}` FROM {selected_subject} WHERE `{date}`='P'")
+        # Get student data
+        cursor.execute(f"SELECT enrollment, name, percentage FROM {selected_subject} WHERE `{date}` = 'P'")
         students_data = cursor.fetchall()
         
-        #student count
-        cursor.execute(f"SELECT COUNT(`{date}`) FROM {selected_subject} WHERE `{date}`='P' ")
+        # Get student count
+        cursor.execute(f"SELECT COUNT(`{date}`) FROM {selected_subject} WHERE `{date}` = 'P'")
         students_count = cursor.fetchone()[0]
         
-        #mark absent as A
-        cursor.execute(f" UPDATE {selected_subject} SET `{date}` = COALESCE(`{date}`, 'A')")
+        # Mark absent as 'A'
+        cursor.execute(f"UPDATE {selected_subject} SET `{date}` = COALESCE(`{date}`, 'A')")
         mysql.connection.commit()
         
         cursor.close()
-    
+        
+        # Logic for attendance percentage calculation
+        cursor = mysql.connection.cursor()
+        table_name = selected_subject
+        
+        # Fetch all distinct enrollments from the table
+        cursor.execute(f"SELECT DISTINCT enrollment FROM {table_name}")
+        all_enrollments = [enrollment[0] for enrollment in cursor.fetchall()]
+        
+        # Fetch all columns from the table
+        cursor.execute(f"SHOW COLUMNS FROM {table_name}")
+        all_columns = [column[0] for column in cursor.fetchall()]
+        
+        # Start from the 5th column (index 4) for the number of presents
+        columns_to_check = all_columns[4:]
+        
+        for enrollment in all_enrollments:        
+            # Constructing the SQL query dynamically 
+            sql_query = (
+                f"SELECT SUM("
+                f"{' + '.join([f'(`{column}` = %s)' for column in columns_to_check])}"
+                f") AS total_p_count "
+                f"FROM {table_name} WHERE enrollment = %s"
+                )
+
+            # Execute the query
+            cursor.execute(sql_query, ['P'] * len(columns_to_check) + [enrollment])
+            
+            total_presents = cursor.fetchone()[0]  
+            
+            percentage = (total_presents / (len(all_columns) - 4)) * 100
+            
+            # Add percentage in the column
+            update_query = f"UPDATE {table_name} SET percentage = %s WHERE enrollment = %s"
+            cursor.execute(update_query, (percentage, enrollment))
+        
+        mysql.connection.commit()
+        cursor.close()
+        
         return render_template('stop_attendance.html', students_data=students_data, students_count=students_count, selected_subject=selected_subject)
     else:
         return redirect(url_for('faculty_login'))
+
 
 # Download Attendance
 @app.route('/download_attendance', methods=['GET', 'POST'])
@@ -313,9 +353,9 @@ def student_dashboard():
                     
                     date = keys_dict.get(student_attendance_id)
                     
-                    cursor = mysql.connection.cursor()
-                    table_name = f"{selected_subject}"
-
+                    table_name = selected_subject
+                    
+                    cursor = mysql.connection.cursor
                     # Check if the student already has a row in the table
                     cursor.execute(f"SELECT * FROM {table_name} WHERE enrollment = %s", (enrollment,))
                     studentdatarow = cursor.fetchone()
@@ -326,10 +366,12 @@ def student_dashboard():
 
                     elif not studentdatarow:
                         # If the student doesn't have a row, insert a new row with attendance 'P'
-                        cursor.execute(f"INSERT INTO {table_name} (enrollment, name, `{date}`, faculty_id) VALUES (%s, %s, 'P', %s)", (enrollment, name, faculty_id))
+                        cursor.execute(f"INSERT INTO {table_name} (enrollment, name, faculty_id,`{date}`) VALUES (%s, %s, %s,'P')", (enrollment, name, faculty_id,))
 
                     mysql.connection.commit()
                     cursor.close()
+                   
+                    
                     return redirect(url_for('attendance_marked'))
 
                 else:
