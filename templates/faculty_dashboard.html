@@ -36,7 +36,11 @@
                     </select>
                 </div>
                     <input type="hidden" name="selected_subject" value="{{ session['selected_subject'] }}">
+                    {% if date_error %}
+                        <button type="submit" class="btn btn-success btn-block">Start Attendance</button>
+                    {% else %}
                     <button type="submit" class="btn btn-success btn-block" onclick="startTimer()">Start Attendance</button>
+                    {% endif %}
                 </form>
 
             </div>
@@ -54,7 +58,6 @@
         socket.on('update_timer', function(timerValue) {
             document.getElementById('timer').innerText = timerValue;
         });
-
         function startTimer() {
             var selectedValue = document.querySelector('input[name="time"]:checked').value;
             socket.emit('start_timer', selectedValue);
