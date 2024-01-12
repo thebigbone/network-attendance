@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %} Apply Filter {% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-5 position-relative">
+      <div class="card-header text-center">
+        <h1 class="card-title">Add Filters</h1>
+      </div>
+
+      <div class="card-body">
+        <form action="{{ url_for('apply_filter') }}" method="post">
+           
+          <div class="form-group">
+            <label for="subject" class="font-weight-bold">Select Subject: </label>
+            <select name="subject" id="subject" class="form-control" required>
+              <option value="" disabled selected>Select a Subject</option>
+              {% for subject in subjects %}
+                <option value="{{ subject }}">{{ subject }}</option>
+              {% endfor %}
+            </select>
+          </div> 
+           
+          <div class="form-group">
+              <label class="font-weight-bold">Filter:</label>
+              <div class="form-group text-center">
+                    <input type="radio" name="filter" value="less_than" class="form-check-label" /> Less Than
+                    <input type="radio" name="filter" value="greater_than" class="form-check-label" /> Greater Than
+              </div>
+          </div>
+
+          <div class="form-group">
+            <label for="percentage" class="font-weight-bold">Attendance Percentage:</label>
+            <input type="number" name="percentage" class="form-control" min="0" max="100" required />
+          </div>
+          
+          <button type="submit" class="btn btn-success btn-block" id="filtered_databtn">Apply Filter</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
