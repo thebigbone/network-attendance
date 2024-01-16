@@ -127,18 +127,15 @@ def faculty_dashboard():
 def start_attendance():
 
     faculty_id = session.get('faculty_id')
-    app.logger.info("Fac id: %s", faculty_id)
     
     selected_subject = request.form.get('subject')
     session['selected_subject'] = selected_subject
-    app.logger.info("subject: %s", selected_subject)
+    
    
     date = request.form.get('date')
-    app.logger.info("SESSION SET DATE: %s",date)
     session['date'] = date
     
     given_time = request.form.get('time')
-    app.logger.info("time: %s", given_time)
    
     
     cursor = mysql.connection.cursor()
@@ -236,8 +233,8 @@ def stop_attendance():
             percentage = (total_presents / (len(all_columns) - 4)) * 100
             
             # Add percentage in the column
-            update_query = f"UPDATE {table_name} SET percentage = %s WHERE enrollment = %s"
-            cursor.execute(update_query, (percentage, enrollment))
+            update_query = f"UPDATE {table_name} SET percentage = {percentage} WHERE enrollment = {enrollment}"
+            cursor.execute(update_query)
         
         mysql.connection.commit()
         cursor.close()
@@ -265,7 +262,133 @@ def download_attendance():
         # Send the Excel file as a response for download
         return send_file(excel_buffer, download_name=f"{selected_subject}_attendance_sheet.xlsx", as_attachment=True)
     else:
-        return redirect(url_for('faculty_login'))    
+        return redirect(url_for('faculty_login')) 
+
+# Modify Attendance
+@app.route('/modify_attendance', methods=['GET','POST'])
+def modify_attendance():
+    msg=''
+    if 'faculty_id' in session:
+        
+        # Show subjects
+        faculty_id = session['faculty_id']
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT teaching_class FROM faculty_accounts WHERE faculty_id = %s", (faculty_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        subjects = []
+        if result:
+            teaching_class = result[0]
+            subjects = teaching_class.split(',') if teaching_class else []
+            
+        if request.method == 'POST':
+            modify_subject = request.form['subject']
+            date = request.form['date']
+            enrollment = request.form['enrollment']
+            new_attendance = request.form['new_attendance']
+            
+            cursor = mysql.connection.cursor()
+            cursor.execute(f"UPDATE {modify_subject} SET `{date}` = %s WHERE enrollment = %s;", (new_attendance, enrollment))
+            mysql.connection.commit()
+            
+            if cursor.rowcount > 0:
+                msg='Record Updated successfully!!!'
+            else:
+                msg='No records updated. Please try again.'
+               
+            
+            # Fetch all columns from the table
+            cursor.execute(f"SHOW COLUMNS FROM {modify_subject}")
+            all_columns = [column[0] for column in cursor.fetchall()]
+            
+            # Start from the 5th column (index 4) for the number of presents
+            columns_to_check = all_columns[4:]
+            
+            sql_query = (
+                f"SELECT SUM("
+                f"{' + '.join([f'(`{column}` = %s)' for column in columns_to_check])}"
+                f") AS total_p_count "
+                f"FROM {modify_subject} WHERE enrollment = %s"
+                )
+            # Execute the query
+            cursor.execute(sql_query, ['P'] * len(columns_to_check) + [enrollment])
+                
+            total_presents = cursor.fetchone()[0]  
+                
+            percentage = (total_presents / (len(all_columns) - 4)) * 100
+                
+            # Add percentage in the column
+            update_query = f"UPDATE {modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
+            cursor.execute(update_query)
+            
+            mysql.connection.commit()
+            cursor.close()
+        
+        return render_template('modify_attendance.html',subjects=subjects,msg=msg)
+    else:
+        return redirect(url_for('faculty_login'))
+
+# Apply Filter 
+@app.route('/apply_filter', methods=['GET','POST'])
+def apply_filter():
+    if 'faculty_id' in session:
+        # Show subjects
+        faculty_id = session['faculty_id']
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT teaching_class FROM faculty_accounts WHERE faculty_id = %s", (faculty_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        subjects = []
+        if result:
+            teaching_class = result[0]
+            subjects = teaching_class.split(',') if teaching_class else []
+
+        if request.method == 'POST':
+            filtered_subject = request.form['subject']
+            given_filter = request.form['filter']
+            percentage = request.form['percentage']
+
+            # Redirect to filtered_data with URL parameters
+            return redirect(url_for('filtered_data', filtered_subject=filtered_subject, given_filter=given_filter,percentage=percentage))
+
+        return render_template('apply_filter.html', subjects=subjects)
+    else:
+        return redirect(url_for('faculty_login'))
+
+# Filtered data show
+@app.route('/apply_filter/filtered_data', methods=['GET','POST'])
+def filtered_data():
+    if 'faculty_id' in session:
+        filtered_subject = request.args.get('filtered_subject')
+        
+        given_filter = request.args.get('given_filter')
+       
+        percentage = request.args.get('percentage')
+
+        cursor = mysql.connection.cursor()
+        
+        if given_filter == 'greater_than':
+            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage >= %s",(percentage,))
+            filtered_attendance = cursor.fetchall()
+            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage >= %s",(percentage,))
+            students_count = cursor.fetchone()[0]
+            
+
+        elif given_filter == 'less_than':
+            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage <= %s",(percentage,))
+            filtered_attendance = cursor.fetchall()
+            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage <= %s",(percentage,))
+            students_count = cursor.fetchone()[0]
+            
+        cursor.close()
+        
+        return render_template('filtered_data.html', filtered_subject=filtered_subject, filtered_attendance=filtered_attendance, students_count=students_count)
+
+    else:
+        return redirect(url_for('faculty_login'))
+
 
 # Student registration page
 @app.route('/student_register', methods=['GET', 'POST'])
@@ -351,7 +474,6 @@ def student_dashboard():
             
             # Convert the results to a dictionary
             keys_dict = dict(keys)
-            app.logger.info("Dictionary of keys: %s", keys_dict)
             
             if session['enrollment'] == enrollment:
                 if student_attendance_id in keys_dict.keys():
@@ -360,16 +482,19 @@ def student_dashboard():
                     
                     table_name = selected_subject
                     
-                    cursor = mysql.connection.cursor
+                    cursor = mysql.connection.cursor()
+                    
                     # Check if the student already has a row in the table
                     cursor.execute(f"SELECT * FROM {table_name} WHERE enrollment = %s", (enrollment,))
                     studentdatarow = cursor.fetchone()
 
                     if studentdatarow:
+                        
                         # If the student already has a row, update the attendance for the current date as P
                         cursor.execute(f"UPDATE {table_name} SET `{date}` = 'P' WHERE enrollment = %s", (enrollment,))
 
                     elif not studentdatarow:
+                        
                         # If the student doesn't have a row, insert a new row with attendance 'P'
                         cursor.execute(f"INSERT INTO {table_name} (enrollment, name, faculty_id,`{date}`) VALUES (%s, %s, %s,'P')", (enrollment, name, faculty_id,))
 

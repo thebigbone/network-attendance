@@ -10,13 +10,13 @@
             </div>
             <div class="card-body text-center">
                 <p>Number of attendant(s): {{students_count}}</p>
+            {% if students_count>0 %}
                 <p>Student(s) who enrolled in this attendance session of {{selected_subject}}:</p>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Enrollment</th>
                             <th>Name</th>
-                            <th>Percentage</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -24,11 +24,11 @@
                             <tr>
                                 <td>{{student[0]}}</td>
                                 <td>{{student[1]}}</td>
-                                <td>{{student[2]}}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            {% endif %}
                 <div class="text-center mt-4">
                     <a href="/faculty_dashboard" class="btn btn-primary">Home</a>
                     <a href="/logout" class="btn btn-primary">Logout</a>
