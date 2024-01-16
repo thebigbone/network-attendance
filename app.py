@@ -134,10 +134,7 @@ def start_attendance():
    
     date = request.form.get('date')
     session['date'] = date
-    
-    given_time = request.form.get('time')
-   
-    
+        
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=%s AND COLUMN_NAME=%s", (selected_subject, date))
     result = cursor.fetchone()
@@ -148,10 +145,6 @@ def start_attendance():
         session['date_error'] = date_error
 
         return redirect(url_for('faculty_dashboard'))
-    
-    if given_time:
-        session['time'] = given_time
-        timer_duration = int(given_time)
     
     if faculty_id:
         attendance_id = secrets.token_urlsafe(5).upper()
@@ -168,7 +161,7 @@ def start_attendance():
         mysql.connection.commit()
         cursor.close()
 
-        return render_template('start_attendance.html', faculty_id=faculty_id, attendance_id=attendance_id, selected_subject=selected_subject, timer_duration=timer_duration)
+        return render_template('start_attendance.html', faculty_id=faculty_id, attendance_id=attendance_id, selected_subject=selected_subject)
     else:
         return redirect(url_for('faculty_login'))
     
