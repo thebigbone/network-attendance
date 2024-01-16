@@ -116,7 +116,6 @@ def faculty_dashboard():
 
         date_error = session.get('date_error')
 
-        app.logger.info("date_error value in dashboard: %s", date_error)
 
         return render_template('faculty_dashboard.html', subjects=subjects, date_error=date_error)
     else:
@@ -131,35 +130,31 @@ def start_attendance():
     selected_subject = request.form.get('subject')
     session['selected_subject'] = selected_subject
     
-   
+
     date = request.form.get('date')
     session['date'] = date
-        
-    cursor = mysql.connection.cursor()
-    cursor.execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=%s AND COLUMN_NAME=%s", (selected_subject, date))
-    result = cursor.fetchone()
-    cursor.close()
-    if result:
-        date_error='Attendance is taken for this date! Change date.'
 
-        session['date_error'] = date_error
-
-        return redirect(url_for('faculty_dashboard'))
-    
     if faculty_id:
         attendance_id = secrets.token_urlsafe(5).upper()
         
         selected_subject = request.form.get('subject')
         session['selected_subject'] = selected_subject
         
-
-        cursor = mysql.connection.cursor()
-        cursor.execute(f"INSERT INTO {faculty_id}_keys (attendance_id, atten_id_date, faculty_id) VALUES (%s, %s, %s)", (attendance_id, date, faculty_id))
+        try:
+            cursor = mysql.connection.cursor()
+            cursor.execute(f"INSERT INTO {faculty_id}_keys (attendance_id, atten_id_date, faculty_id) VALUES (%s, %s, %s)", (attendance_id, date, faculty_id))
+            
+            alter_query = f"ALTER TABLE {selected_subject} ADD COLUMN `{date}` CHAR(1)"
+            cursor.execute(alter_query)
+            mysql.connection.commit()
+            cursor.close()
+            
+        except Exception:
+            msg='Attendance is taken for this date! Change date.'
+            session['date_error'] = msg
+            return redirect(url_for('faculty_dashboard'))
         
-        alter_query = f"ALTER TABLE {selected_subject} ADD COLUMN `{date}` CHAR(1)"
-        cursor.execute(alter_query)
-        mysql.connection.commit()
-        cursor.close()
+        
 
         return render_template('start_attendance.html', faculty_id=faculty_id, attendance_id=attendance_id, selected_subject=selected_subject)
     else:
@@ -281,16 +276,20 @@ def modify_attendance():
             enrollment = request.form['enrollment']
             new_attendance = request.form['new_attendance']
             
-            cursor = mysql.connection.cursor()
-            cursor.execute(f"UPDATE {modify_subject} SET `{date}` = %s WHERE enrollment = %s;", (new_attendance, enrollment))
-            mysql.connection.commit()
+            try:
+                cursor = mysql.connection.cursor()
+                cursor.execute(f"UPDATE {modify_subject} SET `{date}` = %s WHERE enrollment = %s;", (new_attendance, enrollment))
+                mysql.connection.commit()
+                
+                if cursor.rowcount > 0:
+                    msg='Record Updated successfully!!!'
+                else:
+                    msg='No records updated. Please try again.'
+                    
+            except Exception:
+                msg = 'Error updating records: Date or Enrollment does not exist.'
             
-            if cursor.rowcount > 0:
-                msg='Record Updated successfully!!!'
-            else:
-                msg='No records updated. Please try again.'
-               
-            
+                
             # Fetch all columns from the table
             cursor.execute(f"SHOW COLUMNS FROM {modify_subject}")
             all_columns = [column[0] for column in cursor.fetchall()]

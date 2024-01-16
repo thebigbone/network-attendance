@@ -10,7 +10,7 @@
       </div>
 
       <div class="card-body">
-          {% if msg is defined %}
+          {% if msg %}
             <div class="alert alert-danger">{{ msg }}</div>
           {% endif %}
         <form action="{{ url_for('modify_attendance') }}" method="post">
