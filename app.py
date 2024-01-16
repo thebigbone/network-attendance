@@ -3,16 +3,19 @@ from flask_mysqldb import MySQL
 from flask_socketio import SocketIO, emit
 import pandas as pd
 import secrets, io
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'ekdjo39ijdowdpwmdo39dowdmw'  # Set your own secret key
 
 # Configure MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'akshar'
-app.config['MYSQL_DB'] = 'wifiattendance'
+app.config['MYSQL_HOST'] = os.getenv('HOST')
+app.config['MYSQL_USER'] = os.getenv('USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('PASS')
+app.config['MYSQL_DB'] = os.getenv('DATABASE')
 
 mysql = MySQL(app)
 
@@ -111,9 +114,9 @@ def faculty_dashboard():
             teaching_class = result[0]
             subjects = teaching_class.split(',') if teaching_class else []
 
-        date_error = request.args.get('date_error')
+        date_error = session.get('date_error')
 
-        app.logger.info(date_error)
+        app.logger.info("date_error value in dashboard: %s", date_error)
 
         return render_template('faculty_dashboard.html', subjects=subjects, date_error=date_error)
     else:
@@ -145,7 +148,9 @@ def start_attendance():
     if result:
         date_error='Attendance is taken for this date! Change date.'
 
-        return redirect(url_for('faculty_dashboard', date_error=date_error))
+        session['date_error'] = date_error
+
+        return redirect(url_for('faculty_dashboard'))
     
     if given_time:
         session['time'] = given_time

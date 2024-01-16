@@ -4,7 +4,7 @@
 
 {% block content %}
     <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-5">
+        <div class="card p-4">
             <div class="card-header text-center">
                 <h1 class="card-title">Faculty Dashboard</h1>
             </div>
@@ -36,31 +36,26 @@
                     </select>
                 </div>
                     <input type="hidden" name="selected_subject" value="{{ session['selected_subject'] }}">
-                    {% if date_error %}
+                        <!-- <button type="submit" class="btn btn-success btn-block">Start Attendance</button> -->
                         <button type="submit" class="btn btn-success btn-block">Start Attendance</button>
-                    {% else %}
-                    <button type="submit" class="btn btn-success btn-block" onclick="startTimer()">Start Attendance</button>
-                    {% endif %}
                 </form>
 
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
     <script>
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
-
-        socket.on('connect', function() {
-            console.log('Connected to the server');
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var radios = document.getElementsByName('time');
+            console.log('time from the radio button: ', radios)
+            for (var i = 0; i < radios.length; i++) {
+            if (radios[i].checked) {
+                localStorage.setItem('selectedTime', radios[i].value);
+                console.log('selecting radio and storing it: ', selectedTime);
+                break;
+                }
+            }
         });
 
-        socket.on('update_timer', function(timerValue) {
-            document.getElementById('timer').innerText = timerValue;
-        });
-        function startTimer() {
-            var selectedValue = document.querySelector('input[name="time"]:checked').value;
-            socket.emit('start_timer', selectedValue);
-        }
     </script>
 {% endblock %}
