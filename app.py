@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from flask_mysqldb import MySQL
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 import pandas as pd
 import secrets, io
 from dotenv import load_dotenv
@@ -355,30 +355,67 @@ def apply_filter():
 def filtered_data():
     if 'faculty_id' in session:
         filtered_subject = request.args.get('filtered_subject')
+        session['filtered_subject'] = filtered_subject
         
         given_filter = request.args.get('given_filter')
+        session['given_filter'] = given_filter
        
-        percentage = request.args.get('percentage')
+        filter_percentage = request.args.get('percentage')
+        session['filter_percentage'] = filter_percentage
 
         cursor = mysql.connection.cursor()
         
         if given_filter == 'greater_than':
-            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage >= %s",(percentage,))
+            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage >= %s",(filter_percentage,))
             filtered_attendance = cursor.fetchall()
-            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage >= %s",(percentage,))
+            app.logger.info(filtered_attendance)
+            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage >= %s",(filter_percentage,))
             students_count = cursor.fetchone()[0]
             
 
         elif given_filter == 'less_than':
-            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage <= %s",(percentage,))
+            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage <= %s",(filter_percentage,))
             filtered_attendance = cursor.fetchall()
-            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage <= %s",(percentage,))
+            app.logger.info(filtered_attendance)
+            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage <= %s",(filter_percentage,))
             students_count = cursor.fetchone()[0]
             
         cursor.close()
         
         return render_template('filtered_data.html', filtered_subject=filtered_subject, filtered_attendance=filtered_attendance, students_count=students_count)
 
+    else:
+        return redirect(url_for('faculty_login'))
+    
+# filter download
+@app.route('/filter_download', methods=['GET', 'POST'])
+def filter_download():
+    if 'faculty_id' in session:
+        
+        filtered_subject = session.get('filtered_subject')
+        
+        given_filter = session.get('given_filter')
+       
+        filter_percentage = session.get('filter_percentage')
+        
+        if given_filter == 'greater_than':
+            atten_sheet = pd.read_sql(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage >= {filter_percentage}", mysql.connection)
+
+        elif given_filter == 'less_than':
+            atten_sheet = pd.read_sql(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage <= {filter_percentage}", mysql.connection)
+        
+        session.pop('filtered_subject')
+        session.pop('given_filter')
+        session.pop('filter_percentage')
+       
+
+        # Create a BytesIO buffer to store the Excel file
+        excel_buffer = io.BytesIO()
+        atten_sheet.to_excel(excel_buffer, index=False)
+        excel_buffer.seek(0)
+
+        # Send the Excel file as a response for download
+        return send_file(excel_buffer, download_name=f"Filtered_{filtered_subject}.xlsx", as_attachment=True)
     else:
         return redirect(url_for('faculty_login'))
 

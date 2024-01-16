@@ -31,12 +31,15 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                {% endif %}
                     <div class="text-center mt-4">
                         <a href="/faculty_dashboard" class="btn btn-primary">Home</a>
                         <a href="/logout" class="btn btn-primary">Logout</a>
+                        {% if students_count > 0 %}
                         <a href="/" class="btn btn-primary">Download</a>
+                        {% endif %}
                     </div>
-                {% endif %}
+                
             </div>
         </div>
     </div>
