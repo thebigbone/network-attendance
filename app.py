@@ -286,37 +286,38 @@ def modify_attendance():
                     msg='Record Updated successfully!!!'
                 else:
                     msg='No records updated. Please try again.'
+                
+                
+                # Fetch all columns from the table
+                cursor.execute(f"SHOW COLUMNS FROM {modify_subject}")
+                all_columns = [column[0] for column in cursor.fetchall()]
+                
+                # Start from the 5th column (index 4) for the number of presents
+                columns_to_check = all_columns[4:]
+                
+                sql_query = (
+                    f"SELECT SUM("
+                    f"{' + '.join([f'(`{column}` = %s)' for column in columns_to_check])}"
+                    f") AS total_p_count "
+                    f"FROM {modify_subject} WHERE enrollment = %s"
+                    )
+                # Execute the query
+                cursor.execute(sql_query, ['P'] * len(columns_to_check) + [enrollment])
+                    
+                total_presents = cursor.fetchone()[0]  
+                    
+                percentage = (total_presents / (len(all_columns) - 4)) * 100
+                    
+                # Add percentage in the column
+                update_query = f"UPDATE {modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
+                cursor.execute(update_query)
+                
+                mysql.connection.commit()
+                cursor.close()
                     
             except Exception:
                 msg = 'Error updating records: Date or Enrollment does not exist.'
             
-                
-            # Fetch all columns from the table
-            cursor.execute(f"SHOW COLUMNS FROM {modify_subject}")
-            all_columns = [column[0] for column in cursor.fetchall()]
-            
-            # Start from the 5th column (index 4) for the number of presents
-            columns_to_check = all_columns[4:]
-            
-            sql_query = (
-                f"SELECT SUM("
-                f"{' + '.join([f'(`{column}` = %s)' for column in columns_to_check])}"
-                f") AS total_p_count "
-                f"FROM {modify_subject} WHERE enrollment = %s"
-                )
-            # Execute the query
-            cursor.execute(sql_query, ['P'] * len(columns_to_check) + [enrollment])
-                
-            total_presents = cursor.fetchone()[0]  
-                
-            percentage = (total_presents / (len(all_columns) - 4)) * 100
-                
-            # Add percentage in the column
-            update_query = f"UPDATE {modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
-            cursor.execute(update_query)
-            
-            mysql.connection.commit()
-            cursor.close()
         
         return render_template('modify_attendance.html',subjects=subjects,msg=msg)
     else:
