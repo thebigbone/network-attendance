@@ -115,7 +115,8 @@ def faculty_dashboard():
             subjects = teaching_class.split(',') if teaching_class else []
 
         date_error = session.get('date_error')
-
+        session.pop('date_error', None)
+        
 
         return render_template('faculty_dashboard.html', subjects=subjects, date_error=date_error)
     else:
@@ -398,10 +399,10 @@ def filter_download():
         filter_percentage = session.get('filter_percentage')
         
         if given_filter == 'greater_than':
-            atten_sheet = pd.read_sql(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage >= {filter_percentage}", mysql.connection)
+            atten_sheet = pd.read_sql(f"SELECT * FROM {filtered_subject} WHERE percentage >= {filter_percentage}", mysql.connection)
 
         elif given_filter == 'less_than':
-            atten_sheet = pd.read_sql(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage <= {filter_percentage}", mysql.connection)
+            atten_sheet = pd.read_sql(f"SELECT * FROM {filtered_subject} WHERE percentage <= {filter_percentage}", mysql.connection)
         
         session.pop('filtered_subject')
         session.pop('given_filter')
