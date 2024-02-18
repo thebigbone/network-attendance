@@ -4,7 +4,7 @@ from flask_socketio import SocketIO
 import pandas as pd
 import secrets, io
 from dotenv import load_dotenv
-import os
+
 
 load_dotenv()
 
@@ -155,8 +155,6 @@ def start_attendance():
             session['date_error'] = msg
             return redirect(url_for('faculty_dashboard'))
         
-        
-
         return render_template('start_attendance.html', faculty_id=faculty_id, attendance_id=attendance_id, selected_subject=selected_subject)
     else:
         return redirect(url_for('faculty_login'))
@@ -539,17 +537,18 @@ def student_dashboard():
                     if keys:
                         msg = "Wrong Attendance ID for the selected subject."
                     else:
-                        msg ="Attendance timed out!!! Contact admin"
+                        msg ="Attendance timed out!!! Contact Faculty."
             else:
-                msg = "Incorrect enrollment"
+                msg = "Incorrect enrollment."
         else:
-            msg = "Enter attendance details"
+            msg = "Enter attendance details."
 
     else:
         return redirect(url_for('student_login'))
 
     return render_template('student_dashboard.html', subjects=subjects, msg=msg, timer_duration=time_session)
 
+#LOG OUT
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     faculty_id = session.get('faculty_id')
@@ -561,7 +560,6 @@ def logout():
         session.clear()
         return redirect(url_for('student_login'))
     
-
 # Page to display that attendance has been marked
 @app.route('/attendance_marked')
 def attendance_marked():
@@ -569,6 +567,161 @@ def attendance_marked():
     selected_subject = session.get('selected_subject')
    
     return render_template('attendance_marked.html', enrollment=enrollment, selected_subject=selected_subject)
+
+    
+#admin login
+@app.route('/admin_login', methods=['GET','POST'])
+def admin_login():
+    if 'email' in session:
+        return redirect(url_for('admin_dashboard'))
+    else:
+        msg = ''
+        if request.method == 'POST' and 'admin_email' in request.form and 'password' in request.form:
+            admin_email = request.form['admin_email']
+            password = request.form['password']
+            
+            cursor = mysql.connection.cursor()
+            cursor.execute("SELECT * FROM admin_accounts WHERE email = %s AND password = %s", (admin_email, password))
+            account = cursor.fetchone()
+            cursor.close()
+            
+            if account:
+                session['admin_email'] = admin_email
+                
+                return redirect(url_for('admin_dashboard'))
+            else:
+                msg = 'Incorrect email or password!'
+    return render_template('admin_login.html', msg=msg)
+
+#admin Register
+@app.route('/admin_register',methods=['GET','POST'])
+def admin_register():
+    if request.method == 'POST' and 'admin_email' in request.form and 'name' in request.form and 'password' in request.form:
+        admin_email = request.form['admin_email']
+        name = request.form['name']  
+        password = request.form['password']
+        
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO admin_accounts (email, name, password) VALUES (%s, %s, %s)", (admin_email, name, password))
+        mysql.connection.commit()
+        cursor.close()
+
+        return redirect(url_for('admin_login'))
+    
+    return render_template('admin_register.html')
+
+#admin dashboard
+@app.route('/admin_dashboard',methods=['GET','POST'])
+def admin_dashboard():
+    if 'admin_email' in session:
+       
+
+        
+    
+        return render_template('admin_dashboard.html')
+    else:
+        return redirect(url_for('admin_login'))
+    
+#time table management
+@app.route('/time_table',methods=['GET','POST'])
+def time_table():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('time_table.html')
+    else:
+        return redirect(url_for('admin_login'))
+    
+#Add new subjects
+@app.route('/time_table/add_subject_list',methods=['GET','POST'])
+def add_subject_list():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('add_subject_list.html')
+    else:
+        return redirect(url_for('admin_login'))
+    
+#Add new subjects
+@app.route('/time_table/modify_subject_list',methods=['GET','POST'])
+def modify_subject_list():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('modify_subject_list.html')
+    else:
+        return redirect(url_for('admin_login'))
+
+#Faculty Management
+@app.route('/faculty',methods=['GET','POST'])
+def faculty():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('faculty.html')
+    else:
+        return redirect(url_for('admin_login'))
+
+#add_faculty_list
+@app.route('/faculty/add_faculty_list',methods=['GET','POST'])
+def add_faculty_list():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('add_faculty_list.html')
+    else:
+        return redirect(url_for('admin_login'))
+
+#allocate subjects
+@app.route('/faculty/allocate_subjects',methods=['GET','POST'])
+def allocate_subjects():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('allocate_subjects.html')
+    else:
+        return redirect(url_for('admin_login'))
+
+
+#Student Management
+@app.route('/student',methods=['GET','POST'])
+def student():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('student.html')
+    else:
+        return redirect(url_for('admin_login'))
+
+#Add student
+@app.route('/student/add_student_list',methods=['GET','POST'])
+def add_student_list():
+    if 'admin_email' in session: 
+       
+
+        
+    
+        return render_template('add_student_list.html')
+    else:
+        return redirect(url_for('admin_login'))
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

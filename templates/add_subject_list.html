@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %} Add Subject List {% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+        <div class="sidebar-sticky">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="/time_table">
+                <i class="fas fa-clock mr-2"></i> Time Table Management
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/faculty">
+                <i class="fas fa-user-tie mr-2"></i> Faculty Management
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/student">
+                <i class="fas fa-user-graduate mr-2"></i> Student Management
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Add Subject List</h1>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <form action="{{ url_for('add_subject_list') }}" method="post">
+              <div class="form-group">
+               <label for="academic_year">Academic Year:</label>
+               <input type="text" class="form-control" id="academic_year" name="academic_year" required>
+              </div>
+              <div class="form-group">
+                <label for="department">Department:</label>
+                <input type="text" class="form-control" id="department" name="department" required>
+              </div>
+              <div class="form-group">
+                <label for="sem">Semester:</label>
+                <input type="text" class="form-control" id="sem" name="sem" required>
+              </div>
+              <div class="form-group">
+                <label for="num_subjects">Number of Subjects:</label>
+                <input type="number" class="form-control" id="num_subjects" name="num_subjects" min="0" value="1" required>
+              </div>
+              
+              <!-- Subject Details -->
+              <div id="subject-details" class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Subject Name</th>
+                      <th>Subject Code</th>
+                      <th class="text-center">Lecture</th>
+                      <th class="text-center">Lab</th>
+                      <th class="text-center">Tutorial</th>
+                    </tr>
+                  </thead>
+                  <tbody id="subject-details-body">
+                    <tr>
+                      <td><input type="text" class="form-control" name="subject_name_1" required></td>
+                      <td><input type="number" class="form-control" name="subject_code_1" required></td>
+                      <td class="text-center"><input type="checkbox" class="form-check-input" name="lecture_1"></td>
+                      <td class="text-center"><input type="checkbox" class="form-check-input" name="lab_1"></td>
+                      <td class="text-center"><input type="checkbox" class="form-check-input" name="tutorial_1"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the number of subjects input field
+      var numSubjectsInput = document.getElementById('num_subjects');
+      numSubjectsInput.addEventListener('input', function() {
+        var numSubjects = parseInt(this.value);
+        var subjectDetailsBody = document.getElementById('subject-details-body');
+        subjectDetailsBody.innerHTML = ''; // Clear previous subject details
+        
+        // Add input fields for each subject
+        for (var i = 0; i < numSubjects; i++) {
+          var subjectIndex = i + 1;
+          var subjectRow = document.createElement('tr');
+          
+          // Subject Name input field
+          var subjectNameInput = document.createElement('input');
+          subjectNameInput.setAttribute('type', 'text');
+          subjectNameInput.classList.add('form-control');
+          subjectNameInput.setAttribute('name', 'subject_name_' + subjectIndex);
+          subjectNameInput.required = true;
+          
+          <!-- Subject Code input field -->
+          var subjectCodeInput = document.createElement('input');
+          subjectCodeInput.setAttribute('type', 'number');
+          subjectCodeInput.classList.add('form-control');
+          subjectCodeInput.setAttribute('name', 'subject_code_' + subjectIndex);
+          subjectCodeInput.setAttribute('min', '0'); // Added min attribute
+          subjectCodeInput.required = true;
+          
+          // Lecture checkbox
+          var lectureCheckbox = document.createElement('input');
+          lectureCheckbox.setAttribute('type', 'checkbox');
+          lectureCheckbox.classList.add('form-check-input');
+          lectureCheckbox.setAttribute('name', 'lecture_' + subjectIndex);
+          
+          // Lab checkbox
+          var labCheckbox = document.createElement('input');
+          labCheckbox.setAttribute('type', 'checkbox');
+          labCheckbox.classList.add('form-check-input');
+          labCheckbox.setAttribute('name', 'lab_' + subjectIndex);
+          
+          // Tutorial checkbox
+          var tutorialCheckbox = document.createElement('input');
+          tutorialCheckbox.setAttribute('type', 'checkbox');
+          tutorialCheckbox.classList.add('form-check-input');
+          tutorialCheckbox.setAttribute('name', 'tutorial_' + subjectIndex);
+          
+          // Append input fields to subjectRow
+          subjectRow.appendChild(createTableCell(subjectNameInput));
+          subjectRow.appendChild(createTableCell(subjectCodeInput));
+          subjectRow.appendChild(createTableCell(lectureCheckbox, true));
+          subjectRow.appendChild(createTableCell(labCheckbox, true));
+          subjectRow.appendChild(createTableCell(tutorialCheckbox, true));
+          
+          // Append subjectRow to subjectDetailsBody
+          subjectDetailsBody.appendChild(subjectRow);
+        }
+      });
+      
+      function createTableCell(element, centered = false) {
+        var cell = document.createElement('td');
+        if (centered) {
+          cell.classList.add('text-center');
+        }
+        cell.appendChild(element);
+        return cell;
+      }
+    });
+  </script>
+{% endblock %}

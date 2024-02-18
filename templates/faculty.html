@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %} Faculty Management {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/time_table">
+              <i class="fas fa-clock mr-2"></i> Time Table Management
+            </a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/faculty">
+              <i class="fas fa-user-tie mr-2"></i> Faculty Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/student">
+              <i class="fas fa-user-graduate mr-2"></i> Student Management
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Faculty Management</h1>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Add Faculty List</h5>
+            </div>
+            <div class="card-body">
+              <!-- Button to add faculty list -->
+              <form action="{{ url_for('add_faculty_list') }}" method="post">
+                <button type="submit" class="btn btn-primary">Add Faculty List</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Allocate Subjects</h5>
+            </div>
+            <div class="card-body">
+              <!-- Button to allocate subjects -->
+              <form action="{{ url_for('allocate_subjects') }}" method="post">
+                <button type="submit" class="btn btn-primary">Allocate Subjects</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Modify Allocations</h5>
+            </div>
+            <div class="card-body">
+              <!-- Button to clear subjects -->
+              <form action="#" method="post">
+                <button type="submit" class="btn btn-primary">Modify Allocated Subjects</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %}

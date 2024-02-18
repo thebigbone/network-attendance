@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %} Student Management {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/time_table">
+              <i class="fas fa-clock mr-2"></i> Time Table Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/faculty">
+              <i class="fas fa-user-tie mr-2"></i> Faculty Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="student">
+              <i class="fas fa-user-graduate mr-2"></i> Student Management
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Student Management</h1>
+      </div>
+      <div class="row">
+        <div class="col-md-8 mx-auto">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Add Student List</h5>
+            </div>
+            <div class="card-body">
+              <form action="{{ url_for('add_student_list') }}" method="post">
+                <button type="submit" class="btn btn-primary">Add Student List</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %}
