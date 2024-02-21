@@ -1,0 +1,46 @@
+
+{% extends 'base.html' %}
+
+{% block title %} Filtered Attendance {% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="card p-5">
+            <div class="card-header text-center">
+                <h1 class="card-title">Filtered Attendance</h1>
+            </div>
+            <div class="card-body text-center">
+                <p>Number of Student(s): {{ students_count }}</p>
+                {% if students_count > 0 %}
+                    <p>Filtered Student(s) of {{ filtered_subject }}:</p>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Enrollment</th>
+                            <th>Name</th>
+                            <th>Percentage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for student in filtered_attendance %}
+                            <tr>
+                                <td>{{ student[0] }}</td>
+                                <td>{{ student[1] }}</td>
+                                <td>{{ student[2] }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+                    <div class="text-center mt-4">
+                        <a href="/faculty/faculty_dashboard" class="btn btn-primary">Home</a>
+                        <a href="/faculty/logout" class="btn btn-primary">Logout</a>
+                        {% if students_count > 0 %}
+                        <a href="/faculty/filter_download" class="btn btn-primary">Download</a>
+                        {% endif %}
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+{% endblock %}

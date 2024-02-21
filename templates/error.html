@@ -1,21 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Error</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div align="center">
-        <div class="form">
-            <div class="header">
-                <h1 class="word">Error</h1>
+{% extends 'base.html' %}
+
+{% block title %} Error {% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-header">
+                        <h1 class="card-title">Error</h1>
+                    </div>
+                    <div class="card-body">
+                        <p>An error occurred. Please try again later or contact the admin.</p>
+                        <a href="{{ url_for('choose') }}" class="btn btn-primary btn-block">Go back</a>
+                    </div>
+                </div>
             </div>
-            <h2 class="word">
-                <p>An error occurred. Please check your input and try again later.</p>
-                <a href="{{ url_for('choose') }}" class="button">Go back</a>
-            </h2>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

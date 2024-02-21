@@ -19,3 +19,12 @@ CREATE TABLE student_accounts (
     password VARCHAR(255),
     PRIMARY KEY (id)
 );
+
+CREATE TABLE admin_accounts (
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
+    PRIMARY KEY (id)
+);
+
