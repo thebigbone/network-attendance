@@ -35,22 +35,25 @@
         </div>
         <div class="card">
           <div class="card-body">
+            {% if msg %}
+                <p>{{ msg }}</p>
+            {% endif %}
             <form action="{{ url_for('admin.add_subject_list') }}" method="post">
               <div class="form-group">
                <label for="academic_year">Academic Year:</label>
-               <input type="text" class="form-control" id="academic_year" name="academic_year" required>
+               <input type="text" class="form-control" id="academic_year" name="academic_year" placeholder="2023-24" required>
               </div>
               <div class="form-group">
                 <label for="department">Department:</label>
-                <input type="text" class="form-control" id="department" name="department" required>
+                <input type="text" class="form-control" id="department" name="department" placeholder="CE" required>
               </div>
               <div class="form-group">
                 <label for="sem">Semester:</label>
-                <input type="text" class="form-control" id="sem" name="sem" required>
+                <input type="text" class="form-control" id="sem" name="sem" placeholder="6CE" required>
               </div>
               <div class="form-group">
                 <label for="section">Number of Sections:</label>
-                <input type="text" class="form-control" id="section" name="section" required>
+                <input type="number" class="form-control" id="section" name="section" placeholder="3" required>
               </div>
               <div class="form-group">
                 <label for="num_subjects">Number of Subjects:</label>
@@ -71,8 +74,8 @@
                   </thead>
                   <tbody id="subject-details-body">
                     <tr>
-                      <td><input type="text" class="form-control" name="subject_name_1" required></td>
-                      <td><input type="number" class="form-control" name="subject_code_1" required></td>
+                      <td><input type="text" class="form-control" name="subject_name_1" placeholder="AIML" required></td>
+                      <td><input type="number" class="form-control" name="subject_code_1" placeholder="102046702" required></td>
                       <td class="text-center"><input type="checkbox" class="form-check-input" name="lecture_1"></td>
                       <td class="text-center"><input type="checkbox" class="form-check-input" name="lab_1"></td>
                       <td class="text-center"><input type="checkbox" class="form-check-input" name="tutorial_1"></td>
