@@ -307,6 +307,14 @@ def upload():
         
     return 'No file uploaded'
 
+@admin.route('/student_manage', methods=['POST', 'GET'])
+def student():
+    if 'admin_email' in session:
+        
+        return render_template('student_manage.html')
+    else:
+        return redirect(url_for('admin.admin_login'))
+
 @admin.route('/student_manage/add_student_list', methods=['GET', 'POST'])
 def add_student_list():
     if 'admin_email' in session:
