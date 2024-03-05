@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, send_file
 from database import mysql
 from werkzeug.utils import secure_filename
 import pandas as pd
 import string
 import random
+import os
 
 admin = Blueprint("admin", __name__, static_folder="static",
                   template_folder="templates")
@@ -313,6 +314,26 @@ def add_student_list():
         return render_template('add_student_list.html')
     else:
         return redirect(url_for('admin.admin_login'))
+    
+@admin.route('/sample')
+def sample():
+    filename = 'student_data_sample.xlsx'
+    
+    current_directory = os.getcwd()
+    
+    file_path = os.path.join(current_directory, 'sample_download', filename)
+    
+    return send_file(file_path, as_attachment=True)
+
+@admin.route('/sample1')
+def sample1():
+    filename = 'faculty_data_sample.xlsx'
+    
+    current_directory = os.getcwd()
+    
+    file_path = os.path.join(current_directory, 'sample_download', filename)
+    
+    return send_file(file_path, as_attachment=True)
 
 def insert_data_students(row):
     cursor = mysql.connection.cursor()
