@@ -210,46 +210,67 @@ def delete_subject_list():
     else:
         return redirect(url_for('admin.admin_login'))
 
-# Faculty Management
-
-
-@admin.route('/faculty_manage', methods=['GET', 'POST'])
+#Faculty Management
+@admin.route('/faculty_manage',methods=['GET','POST'])
 def faculty():
-    if 'admin_email' in session:
+    if 'admin_email' in session: 
+       
 
+        
+    
         return render_template('faculty_manage.html')
     else:
         return redirect(url_for('admin.admin_login'))
 
-# add_faculty_list
-
-
-@admin.route('/faculty_manage/add_faculty_list', methods=['GET', 'POST'])
+#add_faculty_list
+@admin.route('/faculty_manage/add_faculty_list',methods=['GET','POST'])
 def add_faculty_list():
-    if 'admin_email' in session:
+    if 'admin_email' in session: 
+       
 
+        
+    
         return render_template('add_faculty_list.html')
     else:
         return redirect(url_for('admin.admin_login'))
 
-# allocate subjects
-
-
-@admin.route('/faculty_manage/allocate_subjects', methods=['GET', 'POST'])
-def allocate_subjects():
-    if 'admin_email' in session:
-
-        return render_template('allocate_subjects.html')
+#filter subjects    
+@admin.route('/faculty_manage/filter_subjects', methods=['GET', 'POST'])
+def filter_subjects():
+    if 'admin_email' in session: 
+        acad = request.form.get('academic_year')
+        dept = request.form.get('department')
+        sem = request.form.get('semester')
+        
+        if acad and dept and sem:
+           
+            return redirect(url_for('admin.allocate_subjects', acad=acad, dept=dept, sem=sem))
+        
+        return render_template('filter_subjects.html')
     else:
         return redirect(url_for('admin.admin_login'))
 
+#Allocate subjects
+@admin.route('/faculty_manage/allocate_subjects', methods=['GET', 'POST'])
+def allocate_subjects():
+    msg = ""
+    if 'admin_email' in session: 
+        
+        acad = request.args.get('acad')
+        dept = request.args.get('dept')
+        sem = request.args.get('sem')
+        
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT distinct(subject_name) FROM ATTENDANCE_DETAILS.COLLEGE_DETAILS WHERE academic_year = %s AND department = %s AND semester = %s", (acad, dept, sem))
+        subject_list = cursor.fetchall()
+        
+        cursor.execute("SELECT DISTINCT ATTENDANCE_DETAILS.COLLEGE_DETAILS.faculty_id, WIFIATTENDANCE.FACULTY_ACCOUNTS.name FROM ATTENDANCE_DETAILS.COLLEGE_DETAILS INNER JOIN WIFIATTENDANCE.FACULTY_ACCOUNTS ON ATTENDANCE_DETAILS.COLLEGE_DETAILS.faculty_id = WIFIATTENDANCE.FACULTY_ACCOUNTS.faculty_id WHERE academic_year = %s AND department = %s AND semester = %s", (acad, dept, sem))
+        faculty_list = cursor.fetchall()
+        
+        cursor.close()
+        
 
-# Student Management
-@admin.route('/student_manage', methods=['GET', 'POST'])
-def student():
-    if 'admin_email' in session:
-
-        return render_template('student_manage.html')
+        return render_template('allocate_subjects.html', msg=msg, subject_list=subject_list, faculty_list=faculty_list)
     else:
         return redirect(url_for('admin.admin_login'))
 
