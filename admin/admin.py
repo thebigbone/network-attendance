@@ -288,13 +288,38 @@ def upload():
         df = pd.DataFrame(pd.read_excel(file)) 
   
         print(df) 
-        print(df.columns[0])
+        # print(df.columns[0])
         
         if (df.columns[0] == 'Enrollment'):
             for index, row in df.iterrows():
                 insert_data_students(row)
+                
+                class_name = row['Class-Sem']
+                batch_name = row['Batch']
+                
+                cursor = mysql.connection.cursor()
+                
+                sql_batch = f"select TABLE_NAME FROM information_schema.tables WHERE TABLE_NAME LIKE '{class_name}%%{batch_name}' UNION select TABLE_NAME FROM information_schema.tables WHERE TABLE_NAME LIKE '{class_name}%%lecture';"              
+                cursor.execute(sql_batch)
+                
+                table_name = cursor.fetchall()
+                
+                table_name1 = [item[0][:] for item in table_name]
+                
+                if table_name:
+                    for table_names in table_name1:
+                        sql = f"INSERT INTO attendance_details.{table_names} (enrollment, name) VALUES (%s, %s)"
+                        values = (row['Enrollment'], row['Full Name'])
+                    
+                        cursor.execute(sql, values)
+                        mysql.connection.commit()
+                    
+                    cursor.close()
+                
+                # for index, row['Batch'] in df.iterrows():
+                #     print(row['Batch'])
 
-            message = 'Students added successfully!'
+            message = 'Students added and allocated successfully!'
             
             return render_template('add_student_list.html', message=message)
         else:
