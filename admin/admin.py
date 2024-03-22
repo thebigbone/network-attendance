@@ -5,10 +5,15 @@ import pandas as pd
 import string
 import random
 import os
+from dotenv import load_dotenv
+import smtplib
+import threading
+
+load_dotenv()
+
 
 admin = Blueprint("admin", __name__, static_folder="static",
                   template_folder="templates")
-
 
 # admin login
 @admin.route('/')
@@ -315,11 +320,22 @@ def upload():
                         mysql.connection.commit()
                     
                     cursor.close()
+            
+            # sending emails    
+            cursor = mysql.connection.cursor()
+            sql = 'SELECT email, password from wifiattendance.student_accounts;'
+            cursor.execute(sql)
+            
+            email, password = cursor.fetchall()
+            
+            print(email, password)
+            
+            for email1, password1 in email, password:
+                background_thread = threading.Thread(target=send_email, args=(email1, password1))
                 
-                # for index, row['Batch'] in df.iterrows():
-                #     print(row['Batch'])
-
-            message = 'Students added and allocated successfully!'
+                background_thread.start()
+            
+            message = 'Students added and allocated successfully! Sending emails for login credentials now. It will take a few minutes to arrive.'
             
             return render_template('add_student_list.html', message=message)
         else:
@@ -389,3 +405,30 @@ def insert_data_faculty(row):
 def generate_random_string(length=8):
     alphanumeric = string.ascii_letters + string.digits
     return ''.join(random.choice(alphanumeric) for _ in range(length))
+
+def send_email(to_email, password):
+    gmail_user = os.getenv('GOOGLE_EMAIL') 
+    gmail_password = os.getenv('GOOGLE_PASSWORD')
+    
+    sent_from = gmail_user
+    
+    subject = "Login Credentials for Attendance"
+    body = f"Email: {to_email}\n Password: {password}"
+    
+    email_text = f"""\
+    Subject: {subject}
+
+    Login credentials for attendance:\n
+    {body}
+    """
+
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(gmail_user, gmail_password)
+        server.sendmail(sent_from, to_email, email_text)
+        server.close()
+
+        print('email sent')
+    except Exception as e:
+        print(f'an error occurred: {e}')
