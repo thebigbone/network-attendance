@@ -43,7 +43,7 @@
         socket.on('update_timer', function(timerValue) {
             document.getElementById('timer').innerText = timerValue;
             if (timerValue === 0) {
-            window.location.href = '/stop_attendance';
+            window.location.href = '/faculty/stop_attendance';
         }
         });
         function startTimer(selectedValue) {

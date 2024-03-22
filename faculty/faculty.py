@@ -8,7 +8,7 @@ faculty = Blueprint("faculty", __name__ , static_folder="static", template_folde
 
 
 
-
+'''
 # Faculty registration page
 @faculty.route('/faculty_register', methods=['GET', 'POST'])
 def faculty_register():
@@ -37,6 +37,7 @@ def faculty_register():
         cursor.close()
         return redirect(url_for('faculty.faculty_login'))
     return render_template('faculty_register.html')
+'''
 
 # Faculty login page
 @faculty.route('/faculty_login', methods=['GET', 'POST'])
@@ -50,7 +51,7 @@ def faculty_login():
             password = request.form['password']
             
             cursor = mysql.connection.cursor()
-            cursor.execute("SELECT * FROM faculty_accounts WHERE faculty_id = %s AND password = %s", (faculty_id, password))
+            cursor.execute("SELECT * FROM wifiattendance.faculty_accounts WHERE faculty_id = %s AND password = %s", (faculty_id, password))
             account = cursor.fetchone()
             cursor.close()
             
@@ -70,15 +71,11 @@ def faculty_dashboard():
             
         faculty_id = session['faculty_id']
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT teaching_class FROM faculty_accounts WHERE faculty_id = %s", (faculty_id,))
-        result = cursor.fetchone()
+        cursor.execute("SELECT subject_name FROM attendance_details.college_details WHERE faculty_id = %s", (faculty_id,))
+        subjects = cursor.fetchall()
         cursor.close()
-
-        subjects = []
-        if result:
-            teaching_class = result[0]
-            subjects = teaching_class.split(',') if teaching_class else []
-
+        
+        
         date_error = session.get('date_error')
         session.pop('date_error', None)
         
@@ -108,17 +105,20 @@ def start_attendance():
         
         try:
             cursor = mysql.connection.cursor()
-            cursor.execute(f"INSERT INTO {faculty_id}_keys (attendance_id, atten_id_date, faculty_id) VALUES (%s, %s, %s)", (attendance_id, date, faculty_id))
-            
-            alter_query = f"ALTER TABLE {selected_subject} ADD COLUMN `{date}` CHAR(1)"
-            cursor.execute(alter_query)
+            cursor.execute(f"INSERT INTO wifiattendance.{faculty_id}_keys (attendance_id, atten_id_date, faculty_id) VALUES (%s, %s, %s)", (attendance_id, date, faculty_id))
             mysql.connection.commit()
+           
+            
+            cursor.execute(f"ALTER TABLE attendance_details.{selected_subject} ADD COLUMN `{date}` CHAR(1)")
+            mysql.connection.commit()
+            
+        
             cursor.close()
             
         except Exception:
             msg='Attendance is taken for this date! Change date.'
             session['date_error'] = msg
-            return redirect(url_for('faculty_dashboard'))
+            return redirect(url_for('faculty.faculty_dashboard'))
         
         return render_template('start_attendance.html', faculty_id=faculty_id, attendance_id=attendance_id, selected_subject=selected_subject)
     else:
@@ -136,19 +136,23 @@ def stop_attendance():
         cursor = mysql.connection.cursor()
 
         # Delete all the keys
-        cursor.execute(f"DELETE FROM {faculty_id}_keys WHERE 1")
+        cursor.execute(f"DELETE FROM wifiattendance.{faculty_id}_keys")
         mysql.connection.commit()
         
         # Get student data
-        cursor.execute(f"SELECT enrollment, name, percentage FROM {selected_subject} WHERE `{date}` = 'P'")
+        cursor.execute(f"SELECT enrollment, name, percentage FROM attendance_details.{selected_subject} WHERE `{date}` = 'P'")
         students_data = cursor.fetchall()
         
         # Get student count
-        cursor.execute(f"SELECT COUNT(`{date}`) FROM {selected_subject} WHERE `{date}` = 'P'")
+        cursor.execute(f"SELECT COUNT(`{date}`) FROM attendance_details.{selected_subject} WHERE `{date}` = 'P'")
         students_count = cursor.fetchone()[0]
         
         # Mark absent as 'A'
-        cursor.execute(f"UPDATE {selected_subject} SET `{date}` = COALESCE(`{date}`, 'A')")
+        cursor.execute(f"UPDATE attendance_details.{selected_subject} SET `{date}` = COALESCE(`{date}`, 'A') , faculty_id= COALESCE( faculty_id, %s )",(faculty_id,))
+        mysql.connection.commit()
+        
+        #Increment counter of attendance taken in college_details
+        cursor.execute("UPDATE attendance_details.college_details SET total_attendance = total_attendance + 1 where subject_name = %s",(selected_subject,))
         mysql.connection.commit()
         
         cursor.close()
@@ -158,11 +162,11 @@ def stop_attendance():
         table_name = selected_subject
         
         # Fetch all distinct enrollments from the table
-        cursor.execute(f"SELECT DISTINCT enrollment FROM {table_name}")
+        cursor.execute(f"SELECT DISTINCT enrollment FROM attendance_details.{table_name}")
         all_enrollments = [enrollment[0] for enrollment in cursor.fetchall()]
         
         # Fetch all columns from the table
-        cursor.execute(f"SHOW COLUMNS FROM {table_name}")
+        cursor.execute(f"SHOW COLUMNS FROM attendance_details.{table_name}")
         all_columns = [column[0] for column in cursor.fetchall()]
         
         # Start from the 5th column (index 4) for the number of presents
@@ -174,7 +178,7 @@ def stop_attendance():
                 f"SELECT SUM("
                 f"{' + '.join([f'(`{column}` = %s)' for column in columns_to_check])}"
                 f") AS total_p_count "
-                f"FROM {table_name} WHERE enrollment = %s"
+                f"FROM attendance_details.{table_name} WHERE enrollment = %s"
                 )
 
             # Execute the query
@@ -185,7 +189,7 @@ def stop_attendance():
             percentage = (total_presents / (len(all_columns) - 4)) * 100
             
             # Add percentage in the column
-            update_query = f"UPDATE {table_name} SET percentage = {percentage} WHERE enrollment = {enrollment}"
+            update_query = f"UPDATE attendance_details.{table_name} SET percentage = {percentage} WHERE enrollment = {enrollment}"
             cursor.execute(update_query)
         
         mysql.connection.commit()
@@ -204,7 +208,7 @@ def download_attendance():
         selected_subject = session.get('selected_subject')
         
         # database to excel
-        atten_sheet = pd.read_sql(f"SELECT * FROM {selected_subject}", mysql.connection)
+        atten_sheet = pd.read_sql(f"SELECT * FROM attendance_details.{selected_subject}", mysql.connection)
 
         # Create a BytesIO buffer to store the Excel file
         excel_buffer = io.BytesIO()
@@ -225,14 +229,11 @@ def modify_attendance():
         # Show subjects
         faculty_id = session['faculty_id']
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT teaching_class FROM faculty_accounts WHERE faculty_id = %s", (faculty_id,))
-        result = cursor.fetchone()
+        cursor.execute("SELECT subject_name FROM attendance_details.college_details WHERE faculty_id = %s", (faculty_id,))
+        subjects = cursor.fetchall()
         cursor.close()
 
-        subjects = []
-        if result:
-            teaching_class = result[0]
-            subjects = teaching_class.split(',') if teaching_class else []
+        
             
         if request.method == 'POST':
             modify_subject = request.form['subject']
@@ -242,7 +243,7 @@ def modify_attendance():
             
             try:
                 cursor = mysql.connection.cursor()
-                cursor.execute(f"UPDATE {modify_subject} SET `{date}` = %s WHERE enrollment = %s;", (new_attendance, enrollment))
+                cursor.execute(f"UPDATE attendance_details.{modify_subject} SET `{date}` = %s WHERE enrollment = %s;", (new_attendance, enrollment))
                 mysql.connection.commit()
                 
                 if cursor.rowcount > 0:
@@ -252,7 +253,7 @@ def modify_attendance():
                 
                 
                 # Fetch all columns from the table
-                cursor.execute(f"SHOW COLUMNS FROM {modify_subject}")
+                cursor.execute(f"SHOW COLUMNS FROM attendance_details.{modify_subject}")
                 all_columns = [column[0] for column in cursor.fetchall()]
                 
                 # Start from the 5th column (index 4) for the number of presents
@@ -262,7 +263,7 @@ def modify_attendance():
                     f"SELECT SUM("
                     f"{' + '.join([f'(`{column}` = %s)' for column in columns_to_check])}"
                     f") AS total_p_count "
-                    f"FROM {modify_subject} WHERE enrollment = %s"
+                    f"FROM attendance_details.{modify_subject} WHERE enrollment = %s"
                     )
                 # Execute the query
                 cursor.execute(sql_query, ['P'] * len(columns_to_check) + [enrollment])
@@ -272,7 +273,7 @@ def modify_attendance():
                 percentage = (total_presents / (len(all_columns) - 4)) * 100
                     
                 # Add percentage in the column
-                update_query = f"UPDATE {modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
+                update_query = f"UPDATE attedance_details.{modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
                 cursor.execute(update_query)
                 
                 mysql.connection.commit()
@@ -293,14 +294,10 @@ def apply_filter():
         # Show subjects
         faculty_id = session['faculty_id']
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT teaching_class FROM faculty_accounts WHERE faculty_id = %s", (faculty_id,))
-        result = cursor.fetchone()
+        cursor.execute("SELECT subject_name FROM attendance_details.college_details WHERE faculty_id = %s", (faculty_id,))
+        subjects = cursor.fetchall()
         cursor.close()
 
-        subjects = []
-        if result:
-            teaching_class = result[0]
-            subjects = teaching_class.split(',') if teaching_class else []
 
         if request.method == 'POST':
             filtered_subject = request.form['subject']
@@ -330,18 +327,18 @@ def filtered_data():
         cursor = mysql.connection.cursor()
         
         if given_filter == 'greater_than':
-            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage >= %s",(filter_percentage,))
+            cursor.execute(f"SELECT enrollment, name, percentage FROM attendance_details.{filtered_subject} WHERE percentage >= %s",(filter_percentage,))
             filtered_attendance = cursor.fetchall()
             #app.logger.info(filtered_attendance)
-            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage >= %s",(filter_percentage,))
+            cursor.execute(f"SELECT COUNT(*) FROM attendance_details.{filtered_subject} WHERE percentage >= %s",(filter_percentage,))
             students_count = cursor.fetchone()[0]
             
 
         elif given_filter == 'less_than':
-            cursor.execute(f"SELECT enrollment, name, percentage FROM {filtered_subject} WHERE percentage <= %s",(filter_percentage,))
+            cursor.execute(f"SELECT enrollment, name, percentage FROM attendance_details.{filtered_subject} WHERE percentage <= %s",(filter_percentage,))
             filtered_attendance = cursor.fetchall()
             #app.logger.info(filtered_attendance)
-            cursor.execute(f"SELECT COUNT(*) FROM {filtered_subject} WHERE percentage <= %s",(filter_percentage,))
+            cursor.execute(f"SELECT COUNT(*) FROM attendance_details.{filtered_subject} WHERE percentage <= %s",(filter_percentage,))
             students_count = cursor.fetchone()[0]
             
         cursor.close()
@@ -363,10 +360,10 @@ def filter_download():
         filter_percentage = session.get('filter_percentage')
         
         if given_filter == 'greater_than':
-            atten_sheet = pd.read_sql(f"SELECT * FROM {filtered_subject} WHERE percentage >= {filter_percentage}", mysql.connection)
+            atten_sheet = pd.read_sql(f"SELECT * FROM attendance_details.{filtered_subject} WHERE percentage >= {filter_percentage}", mysql.connection)
 
         elif given_filter == 'less_than':
-            atten_sheet = pd.read_sql(f"SELECT * FROM {filtered_subject} WHERE percentage <= {filter_percentage}", mysql.connection)
+            atten_sheet = pd.read_sql(f"SELECT * FROM attendance_details.{filtered_subject} WHERE percentage <= {filter_percentage}", mysql.connection)
         
         session.pop('filtered_subject')
         session.pop('given_filter')

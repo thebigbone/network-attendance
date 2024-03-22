@@ -64,12 +64,12 @@
                   <label for="subject">Subject tables related to:</label>
                   
                   <select class="form-control select2" id="subject" name="subject" required>
-                  <option value="" disabled selected>Select a Subject</option>
-                  
-                  {% for subject in subjects %}
-                    <option value="{{ subject }}">{{ subject }}</option>
-                  {% endfor %}
-                  
+                    <option value="" disabled selected>Select a Subject</option>
+                    
+                    {% for subject in subjects %}
+                      <option value="{{ subject }}">{{ subject }}</option>
+                    {% endfor %}
+                    
                   </select>
                 </div>
             </div>

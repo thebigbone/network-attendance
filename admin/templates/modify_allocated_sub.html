@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %} Allocate subjects {% endblock %}
+{% block title %} Modify Allocations {% endblock %}
 
 {% block content %}
   <div class="container-fluid">
@@ -31,27 +31,42 @@
       <!-- Main Content -->
       <div class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
         <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 class="h2">Filter subjects and classes</h1>
+          <h1 class="h2">Modify Allocated Subjects</h1>
         </div>
         <div class="card">
           <div class="card-body">
             {% if msg %}
                 <p>{{ msg }}</p>
             {% endif %}
-            <form action="{{ url_for('admin.filter_subjects',direct=direct) }}" method="POST">
-                <div class="form-group">
-                    <label for="academic_year">Academic Year:</label>
-                    <input type="text" class="form-control" id="academic_year" name="academic_year" placeholder="2023-24" required>
-                </div>
-                <div class="form-group">
-                    <label for="department">Department:</label>
-                    <input type="text" class="form-control" id="department" name="department" placeholder="CE" required>
-                </div>
-                <div class="form-group">
-                    <label for="semester">Semester:</label>
-                    <input type="text" class="form-control" id="semester" name="semester" placeholder="6CE" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Continue</button>
+            <form action="{{ url_for('admin.modify_allocated_sub',acad=acad,dept=dept,sem=sem) }}" method="post">
+             <table class="table table-bordered">
+                 <thead>
+                     <tr>
+                         <th>Subject</th>
+                         <th>Faculty</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                    <tr>
+                        <td>
+                            <select name="subject" class="form-control select2" style="width: 100%;">
+                                {% for subject in subject_list %}
+                                <option value="{{ subject[0] }}">{{ subject[0] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select name="faculty_id" class="form-control select2" style="width: 100%;">
+                                {% for name, faculty_id in faculty_list %}
+                                <option value="{{ faculty_id }}">{{ name }} - {{ faculty_id }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+
+             </table>
+                <button type="submit" class="btn btn-primary">Modify Allocation</button>
             </form>
         </div>
         </div>

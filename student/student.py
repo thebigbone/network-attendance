@@ -3,10 +3,8 @@ from database import mysql
 
 student = Blueprint("student", __name__,
                     static_folder="static", template_folder="templates")
-
+'''
 # Student registration page
-
-
 @student.route('/student_register', methods=['GET', 'POST'])
 def student_register():
     if request.method == 'POST' and 'enrollment' in request.form and 'name' in request.form and 'student_class' in request.form and 'password' in request.form:
@@ -24,10 +22,9 @@ def student_register():
         return redirect(url_for('student.student_login'))
 
     return render_template('student_register.html')
+'''
 
 # Student login page
-
-
 @student.route('/student_login', methods=['GET', 'POST'])
 def student_login():
     msg = ''
@@ -37,14 +34,15 @@ def student_login():
 
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "SELECT * FROM student_accounts WHERE enrollment = %s AND password = %s", (enrollment, password))
+            "SELECT * FROM wifiattendance.student_accounts WHERE enrollment = %s AND password = %s", (enrollment, password))
         result = cursor.fetchone()
         cursor.close()
 
         if result:
             session['enrollment'] = enrollment
-            session['student_class'] = result[3]
             session['name'] = result[2]
+            session['student_class'] = result[4]
+            session['batch']= result[6]
 
             return redirect(url_for('student.student_dashboard'))
         else:
@@ -63,18 +61,20 @@ def student_dashboard():
     if 'enrollment' in session:
         msg = ''
         student_class = session.get('student_class')
+        batch = session.get('batch')
         name = session.get('name')
         enrollment = request.form.get('enrollment')
         student_attendance_id = request.form.get('attendance_id')
+        
 
         selected_subject = request.form.get('subject')
         session['selected_subject'] = selected_subject
-        # app.logger.info("Selected subject: %s",selected_subject)
+       
 
         # Finding the tables to show on the dropdown menu
         if student_class:
             cursor = mysql.connection.cursor()
-            cursor.execute("SHOW TABLES LIKE %s", (f"{student_class}_%",))
+            cursor.execute(f"SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_NAME LIKE '{student_class}%%{batch}' UNION select TABLE_NAME FROM information_schema.tables WHERE TABLE_NAME LIKE '{student_class}%%lecture'")
             subjects = cursor.fetchall()
             cursor.close()
         else:
@@ -82,47 +82,38 @@ def student_dashboard():
 
         # Finding all IDs from faculty_id_keys table
         cursor = mysql.connection.cursor()
-        cursor.execute(
-            "SELECT faculty_id FROM faculty_accounts WHERE TRIM(teaching_class) LIKE %s", (f'%{selected_subject}%',))
-        faculty_id_row = cursor.fetchone()
+        cursor.execute("SELECT faculty_id FROM attendance_details.college_details WHERE subject_name = %s",(selected_subject,))
+        faculty_id = cursor.fetchall()
 
-        if faculty_id_row:
-            faculty_id = faculty_id_row[0]
-            table_name = f"{faculty_id}_keys"
-            cursor.execute(
-                f"SELECT attendance_id, atten_id_date FROM {table_name}")
-            keys = cursor.fetchall()
+        if faculty_id:
+            table_name = f"{faculty_id[0][0]}_keys"
+            cursor.execute(f"SELECT attendance_id, atten_id_date FROM wifiattendance.{table_name}")
+            keys = cursor.fetchone()
             cursor.close()
 
-            # Convert the results to a dictionary
-            keys_dict = dict(keys)
 
             if session['enrollment'] == enrollment:
-                if student_attendance_id in keys_dict.keys():
+                if student_attendance_id == keys[0]:
 
-                    date = keys_dict.get(student_attendance_id)
+                    date = keys[1]
 
-                    table_name = selected_subject
 
                     cursor = mysql.connection.cursor()
 
                     # Check if the student already has a row in the table
                     cursor.execute(
-                        f"SELECT * FROM {table_name} WHERE enrollment = %s", (enrollment,))
+                        f"SELECT * FROM attendance_details.{selected_subject} WHERE enrollment = %s", (enrollment,))
                     studentdatarow = cursor.fetchone()
 
                     if studentdatarow:
 
                         # If the student already has a row, update the attendance for the current date as P
                         cursor.execute(
-                            f"UPDATE {table_name} SET `{date}` = 'P' WHERE enrollment = %s", (enrollment,))
+                            f"UPDATE attendance_details.{selected_subject} SET `{date}` = 'P' WHERE enrollment = %s", (enrollment,))
 
                     elif not studentdatarow:
-
-                        # If the student doesn't have a row, insert a new row with attendance 'P'
-                        cursor.execute(
-                            f"INSERT INTO {table_name} (enrollment, name, faculty_id,`{date}`) VALUES (%s, %s, %s,'P')", (enrollment, name, faculty_id,))
-
+                            msg = "Record Not found..."
+                        
                     mysql.connection.commit()
                     cursor.close()
 
@@ -136,7 +127,7 @@ def student_dashboard():
             else:
                 msg = "Incorrect enrollment."
         else:
-            msg = "Enter attendance details."
+            msg = f"Hello {name}, enter attendance details."
 
     else:
         return redirect(url_for('student.student_login'))

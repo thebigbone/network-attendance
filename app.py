@@ -18,11 +18,12 @@ app.register_blueprint(admin, url_prefix='/admin')
 app.register_blueprint(faculty, url_prefix='/faculty')
 app.register_blueprint(student, url_prefix='/student')
 
-app.secret_key = 'ekdjo39ijdowdpwmdo39dowdmw'
+app.secret_key = 'ekdjo39ijdowdpwmdo39dowdmw'  
+
+
 
 socketio = SocketIO(app)
 timer_value = 0
-
 
 @socketio.on('start_timer')
 def start_timer(duration):
@@ -34,7 +35,7 @@ def start_timer(duration):
         timer_value -= 1
 
 
-# First page: Choose faculty or student
+#First page: Choose faculty or student
 @app.route('/')
 @app.route('/choose', methods=['GET', 'POST'])
 def choose():
@@ -46,23 +47,19 @@ def choose():
             return redirect(url_for('student.student_login'))
     return render_template('choose.html')
 
-
 @app.errorhandler(404)
 @app.errorhandler(500)
 @app.errorhandler(505)
 def handle_errors(error):
     return render_template('error.html'), error.code
 
-
 @app.errorhandler(BuildError)
 def handle_build_error(error):
-    return render_template('error.html'), 500
-
+    return render_template('error.html'), 500  
 
 @app.errorhandler(TemplateNotFound)
 def template_not_found(error):
     return render_template('error.html'), 404
-
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

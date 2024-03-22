@@ -39,7 +39,7 @@
             <select name="subject" id="subject" class="form-control" required>
               <option value="" disabled selected>Select a Subject</option>
               {% for subject in subjects %}
-                <option value="{{ subject }}">{{ subject }}</option>
+                <option value="{{ subject[0] }}">{{ subject[0] }}</option>
               {% endfor %}
             </select>
           </div>

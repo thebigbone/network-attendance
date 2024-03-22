@@ -1,15 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from database import mysql
 from werkzeug.utils import secure_filename
 import pandas as pd
 import string
 import random
+
 import os
 from dotenv import load_dotenv
 import smtplib
 import threading
 
 load_dotenv()
+
 
 
 admin = Blueprint("admin", __name__, static_folder="static",
@@ -29,7 +31,7 @@ def admin_login():
 
             cursor = mysql.connection.cursor()
             cursor.execute(
-                "SELECT * FROM admin_accounts WHERE email = %s AND password = %s", (admin_email, password))
+                "SELECT * FROM wifiattendance.admin_accounts WHERE email = %s AND password = %s", (admin_email, password))
             account = cursor.fetchone()
             cursor.close()
 
@@ -42,8 +44,6 @@ def admin_login():
     return render_template('admin_login.html', msg=msg)
 
 # admin Register
-
-
 @admin.route('/admin_register', methods=['GET', 'POST'])
 def admin_register():
     if request.method == 'POST' and 'admin_email' in request.form and 'name' in request.form and 'password' in request.form:
@@ -52,7 +52,7 @@ def admin_register():
         password = request.form['password']
 
         cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO admin_accounts (email, name, password) VALUES (%s, %s, %s)",
+        cursor.execute("INSERT INTO wifiattendance.admin_accounts (email, name, password) VALUES (%s, %s, %s)",
                        (admin_email, name, password))
         mysql.connection.commit()
         cursor.close()
@@ -120,7 +120,7 @@ def add_subject_list():
 
                     if sub_info['lecture'] == 'y':
                         lecture_subject_name = f"{subject_name_prefix}_lecture"
-                        cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name) VALUES (%s, %s, %s, %s)",
+                        cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name,total_attendance) VALUES (%s, %s, %s, %s, 0)",
                                        (acad_year, dept, sem, lecture_subject_name))
 
                     if sub_info['lab'] == 'y':
@@ -128,7 +128,7 @@ def add_subject_list():
 
                         for batch_name in ['BatchA', 'BatchB', 'BatchC', 'BatchD']:
                             lab_subject_batch_name = f"{lab_subject_name}_{batch_name}"
-                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name) VALUES (%s, %s, %s, %s)",
+                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name, total_attendance) VALUES (%s, %s, %s, %s, 0)",
                                            (acad_year, dept, sem, lab_subject_batch_name))
 
                     if sub_info['tutorial'] == 'y':
@@ -136,7 +136,7 @@ def add_subject_list():
 
                         for batch_name in ['BatchA', 'BatchB', 'BatchC', 'BatchD']:
                             tutorial_subject_batch_name = f"{tutorial_subject_name}_{batch_name}"
-                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name) VALUES (%s, %s, %s, %s)",
+                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name, total_attendance) VALUES (%s, %s, %s, %s, 0)",
                                            (acad_year, dept, sem, tutorial_subject_batch_name))
 
                     mysql.connection.commit()
@@ -162,7 +162,6 @@ def add_subject_list():
         return redirect(url_for('admin.admin_login'))
 
 # Add new subjects
-
 
 @admin.route('/time_table_manage/delete_subject_list', methods=['GET', 'POST'])
 def delete_subject_list():
@@ -221,9 +220,6 @@ def delete_subject_list():
 def faculty():
     if 'admin_email' in session: 
        
-
-        
-    
         return render_template('faculty_manage.html')
     else:
         return redirect(url_for('admin.admin_login'))
@@ -233,9 +229,6 @@ def faculty():
 def add_faculty_list():
     if 'admin_email' in session: 
        
-
-        
-    
         return render_template('add_faculty_list.html')
     else:
         return redirect(url_for('admin.admin_login'))
@@ -243,20 +236,29 @@ def add_faculty_list():
 #filter subjects    
 @admin.route('/faculty_manage/filter_subjects', methods=['GET', 'POST'])
 def filter_subjects():
+    
     if 'admin_email' in session: 
+        
         acad = request.form.get('academic_year')
         dept = request.form.get('department')
         sem = request.form.get('semester')
         
-        if acad and dept and sem:
-           
-            return redirect(url_for('admin.allocate_subjects', acad=acad, dept=dept, sem=sem))
         
-        return render_template('filter_subjects.html')
+        if request.method == 'POST':
+            direct = request.args.get('direct')
+            
+            if direct == 'allocate' and acad and dept and sem:
+                return redirect(url_for('admin.allocate_subjects', acad=acad, dept=dept, sem=sem))
+            
+            if direct == 'modify' and acad and dept and sem:
+                return redirect(url_for('admin.modify_allocated_sub', acad=acad, dept=dept, sem=sem))
+           
+        
+        return render_template('filter_subjects.html',direct=direct)
     else:
         return redirect(url_for('admin.admin_login'))
 
-#Allocate subjects
+# Allocate subjects route
 @admin.route('/faculty_manage/allocate_subjects', methods=['GET', 'POST'])
 def allocate_subjects():
     msg = ""
@@ -267,24 +269,74 @@ def allocate_subjects():
         sem = request.args.get('sem')
         
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT distinct(subject_name) FROM ATTENDANCE_DETAILS.COLLEGE_DETAILS WHERE academic_year = %s AND department = %s AND semester = %s", (acad, dept, sem))
+        cursor.execute("SELECT distinct(subject_name) FROM attendance_details.college_details WHERE academic_year = %s AND department = %s AND semester = %s", (acad, dept, sem))
         subject_list = cursor.fetchall()
         
-        cursor.execute("SELECT DISTINCT ATTENDANCE_DETAILS.COLLEGE_DETAILS.faculty_id, WIFIATTENDANCE.FACULTY_ACCOUNTS.name FROM ATTENDANCE_DETAILS.COLLEGE_DETAILS INNER JOIN WIFIATTENDANCE.FACULTY_ACCOUNTS ON ATTENDANCE_DETAILS.COLLEGE_DETAILS.faculty_id = WIFIATTENDANCE.FACULTY_ACCOUNTS.faculty_id WHERE academic_year = %s AND department = %s AND semester = %s", (acad, dept, sem))
+        cursor.execute("SELECT name, faculty_id FROM wifiattendance.faculty_accounts")
         faculty_list = cursor.fetchall()
+        
         
         cursor.close()
         
+        if request.method=='POST':
+           
+            for subject in subject_list:
+                subject_name = subject[0]
+                faculty_id = request.form.get(subject_name)
+               
+                cursor = mysql.connection.cursor()
+                cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
+                mysql.connection.commit()
+                cursor.close()
+                
+            msg = "Subjects allocated successfully!"
 
-        return render_template('allocate_subjects.html', msg=msg, subject_list=subject_list, faculty_list=faculty_list)
+        return render_template('allocate_subjects.html', msg=msg, subject_list=subject_list, faculty_list=faculty_list, acad= acad, dept= dept, sem=sem)
     else:
         return redirect(url_for('admin.admin_login'))
 
-# Add student
 
+#modify Allocation
+@admin.route('/faculty_manage/modify_alloacated_sub', methods=['GET', 'POST'])
+def modify_allocated_sub():
+    msg = ""
+    if 'admin_email' in session: 
+        
+        acad = request.args.get('acad')
+        dept = request.args.get('dept')
+        sem = request.args.get('sem')
+        
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT distinct(subject_name) FROM attendance_details.college_details WHERE academic_year = %s AND department = %s AND semester = %s", (acad, dept, sem))
+        subject_list = cursor.fetchall()
+        
+        cursor.execute("SELECT name, faculty_id FROM wifiattendance.faculty_accounts")
+        faculty_list = cursor.fetchall()
+        
+        
+        cursor.close()
+        
+        if request.method=='POST':
+           
+            subject_name = request.form.get('subject')
+            faculty_id = request.form.get('faculty_id')
+               
+            cursor = mysql.connection.cursor()
+            cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
+            mysql.connection.commit()
+            cursor.close()
+                
+            msg = "Allocation Modified successfully!"
+
+        return render_template('modify_allocated_sub.html', msg=msg, subject_list=subject_list, faculty_list=faculty_list, acad= acad, dept= dept, sem=sem)
+    else:
+        return redirect(url_for('admin.admin_login'))
+
+
+
+# Add student
 @admin.route('/upload', methods=['POST', 'GET'])
 def upload():
-    message = ''
     if 'file' in request.files:
         file = request.files['file']
         filename = secure_filename(file.filename)
@@ -293,7 +345,6 @@ def upload():
         df = pd.DataFrame(pd.read_excel(file)) 
   
         print(df) 
-        # print(df.columns[0])
         
         if (df.columns[0] == 'Enrollment'):
             for index, row in df.iterrows():
@@ -321,6 +372,7 @@ def upload():
                     
                     cursor.close()
             
+
             # sending emails    
             cursor = mysql.connection.cursor()
             sql = 'SELECT email, password from wifiattendance.student_accounts;'
@@ -348,46 +400,27 @@ def upload():
         
     return 'No file uploaded'
 
-@admin.route('/student_manage', methods=['POST', 'GET'])
-def student():
+@admin.route('/student_manage',methods=['GET','POST'])
+def student_manage():
     if 'admin_email' in session:
-        
+
         return render_template('student_manage.html')
     else:
         return redirect(url_for('admin.admin_login'))
+    
 
 @admin.route('/student_manage/add_student_list', methods=['GET', 'POST'])
 def add_student_list():
     if 'admin_email' in session:
-
+    
         return render_template('add_student_list.html')
     else:
         return redirect(url_for('admin.admin_login'))
-    
-@admin.route('/sample')
-def sample():
-    filename = 'student_data_sample.xlsx'
-    
-    current_directory = os.getcwd()
-    
-    file_path = os.path.join(current_directory, 'sample_download', filename)
-    
-    return send_file(file_path, as_attachment=True)
-
-@admin.route('/sample1')
-def sample1():
-    filename = 'faculty_data_sample.xlsx'
-    
-    current_directory = os.getcwd()
-    
-    file_path = os.path.join(current_directory, 'sample_download', filename)
-    
-    return send_file(file_path, as_attachment=True)
 
 def insert_data_students(row):
     cursor = mysql.connection.cursor()
 
-    sql = "INSERT INTO student_accounts (enrollment, email, name, student_class, password, batch) VALUES (%s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO wifiattendance.student_accounts (enrollment, email, name, student_class, password, batch) VALUES (%s, %s, %s, %s, %s, %s)"
     values = (row['Enrollment'], row['Email-id'], row['Full Name'], row['Class-Sem'], generate_random_string(), row['Batch'])
     cursor.execute(sql, values)
     mysql.connection.commit()
@@ -396,10 +429,13 @@ def insert_data_students(row):
 def insert_data_faculty(row):
     cursor = mysql.connection.cursor()
 
-    sql = "INSERT INTO faculty_accounts (faculty_id, name, email, password, teaching_class) VALUES (%s, %s, %s, %s, %s)"
-    values = (row['Faculty_id'], row['Full name'], row['Email-id'], generate_random_string() , row['Class-name'])
+    sql = "INSERT INTO wifiattendance.faculty_accounts (faculty_id, name, email, password) VALUES (%s, %s, %s, %s)"
+    values = (row['Faculty_id'], row['Full name'], row['Email-id'], generate_random_string() )
     cursor.execute(sql, values)
     mysql.connection.commit()
+    
+    cursor.execute("CREATE TABLE wifiattendance.{}_keys (attendance_id VARCHAR(255), atten_id_date VARCHAR(255), faculty_id VARCHAR(255), FOREIGN KEY (faculty_id) REFERENCES faculty_accounts(faculty_id))".format(row['Faculty_id']))
+
     cursor.close()    
 
 def generate_random_string(length=8):
