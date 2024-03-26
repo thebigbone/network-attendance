@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 import string
 import random
-
+from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
 import smtplib
@@ -382,7 +382,7 @@ def upload():
                 
                 if table_name:
                     for table_names in table_name1:
-                        sql = f"INSERT INTO attendance_details.{table_names} (enrollment, name) VALUES (%s, %s)"
+                        sql = f"INSERT IGNORE INTO attendance_details.{table_names} (enrollment, name) VALUES (%s, %s)"
                         values = (row['Enrollment'], row['Full Name'])
                     
                         cursor.execute(sql, values)
@@ -401,7 +401,9 @@ def upload():
             print(email, password)
             
             for email1, password1 in email, password:
-                background_thread = threading.Thread(target=send_email, args=(email1, password1))
+                body = f"Email: {email1} \n Password: {password1}"
+                subject = "Login credentials for Attendance."
+                background_thread = threading.Thread(target=send_email, args=(email1, subject, body))
                 
                 background_thread.start()
             
@@ -460,27 +462,26 @@ def generate_random_string(length=8):
     alphanumeric = string.ascii_letters + string.digits
     return ''.join(random.choice(alphanumeric) for _ in range(length))
 
-def send_email(to_email, password):
+def send_email(to_email, subject, body, html_body=None):
     gmail_user = os.getenv('GOOGLE_EMAIL') 
     gmail_password = os.getenv('GOOGLE_PASSWORD')
     
     sent_from = gmail_user
     
-    subject = "Login Credentials for Attendance"
-    body = f"Email: {to_email}\n Password: {password}"
+    if html_body:
+        msg = MIMEText(html_body, 'html')
+    else:
+        msg = MIMEText(body)
     
-    email_text = f"""\
-    Subject: {subject}
-
-    Login credentials for attendance:\n
-    {body}
-    """
+    msg['Subject'] = subject
+    msg['From'] = sent_from
+    msg['To'] = to_email
 
     try:
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
         server.login(gmail_user, gmail_password)
-        server.sendmail(sent_from, to_email, email_text)
+        server.sendmail(sent_from, to_email, msg.as_string())
         server.close()
 
         print('email sent')

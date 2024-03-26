@@ -1,29 +1,30 @@
 {% extends 'base.html' %}
-    
+
 {% block title %} Student Login {% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-center align-items-center vh-100">
-         <div class="card p-5">
-            <div class="card-header text-center">
-                <h1 class="card-title">Student Login</h1>
-            </div>
-            <div class="card-body text-center">
-                <form action="{{ url_for('student.student_login') }}" method="post">
-                    {% if msg %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ msg }}
-                        </div>
-                    {% endif %}
-                    <div class="form-group">
-                        <input id="enrollment" name="enrollment" type="text" placeholder="Enrollment Number" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <input id="password" name="password" type="password" placeholder="Password" class="form-control" required />
-                    </div>
-                    <button type="submit" class="btn btn-success btn-block">Login</button>
-                </form>
-              </div>
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-5">
+        <div class="card-header text-center">
+            <h1 class="card-title">Student Login</h1>
+        </div>
+        <div class="card-body text-center">
+            <form action="{{ url_for('student.student_login') }}" method="post">
+                {% if msg %}
+                <div class="alert alert-danger" role="alert">
+                    {{ msg }}
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <input id="enrollment" name="enrollment" type="text" placeholder="Enrollment Number" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <input id="password" name="password" type="password" placeholder="Password" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-success btn-block">Login</button><br>
+                <a href="/student/forgot_password">Forgot password?</a>
+            </form>
         </div>
     </div>
+</div>
 {% endblock %}

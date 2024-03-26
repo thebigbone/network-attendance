@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from database import mysql
+from admin.admin import send_email, generate_random_string
+import secrets
 
 student = Blueprint("student", __name__,
                     static_folder="static", template_folder="templates")
@@ -143,6 +145,80 @@ def attendance_marked():
 
     return render_template('attendance_marked.html', enrollment=enrollment, selected_subject=selected_subject)
 
+@student.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST' and 'email' in request.form:
+        email = request.form["email"]
+        
+        cursor = mysql.connection.cursor()
+        
+        sql = f"SELECT id FROM wifiattendance.student_accounts where email = '{email}';"
+        cursor.execute(sql)
+        user_id = cursor.fetchone()[0]
+        
+        session['user_id'] = user_id
+        print("user session: ", session.get('user_id'))
+        
+        if user_id:
+            secret_token = generate_random_string(8)
+            sql = "INSERT INTO wifiattendance.reset_password (id, password_token) values (%s, %s)"
+            values = (user_id, secret_token)
+            
+            cursor.execute(sql, values)
+            mysql.connection.commit()
+            cursor.close()
+            
+            subject = "Reset Password"
+            body = f"Enter the following token to reset your password: \n {secret_token}"
+            
+            send_email(email, subject, body)
+            return redirect(url_for('student.reset_password'))
+        
+    return render_template('forgot_password.html')
+
+@student.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST' and 'token' in request.form:
+        token = request.form["token"]
+        
+        user_id = session.get('user_id')
+        print(user_id)
+        cursor = mysql.connection.cursor()
+        sql = f"SELECT id FROM wifiattendance.reset_password where password_token = '{token}';"
+        cursor.execute(sql)
+        
+        result = cursor.fetchone()
+        print(result)
+        
+        if result:
+            return redirect(url_for('student.change_password'))
+        else:
+            msg = 'Invalid token.'
+            return render_template('reset_password.html', msg=msg)
+            
+    return render_template('reset_password.html')
+        
+@student.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    msg = ''
+    if request.method == 'POST' and 'password' in request.form:
+        new_password = request.form["password"]
+        
+        user_id = session.get('user_id')
+        
+        cursor = mysql.connection.cursor()
+        sql = f"UPDATE wifiattendance.student_accounts SET password = '{new_password}' where id = '{user_id}';"
+        cursor.execute(sql)
+        
+        sql1 = f"DELETE FROM wifiattendance.reset_password where id = '{user_id}';"
+        cursor.execute(sql1)
+        mysql.connection.commit()
+        
+        msg = 'Password updated successfully!'
+        return render_template('change_password.html', msg=msg)
+    
+    return render_template('change_password.html')
+        
 
 # LOG OUT
 @student.route('/logout', methods=['GET', 'POST'])
