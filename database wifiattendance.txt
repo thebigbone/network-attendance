@@ -38,7 +38,6 @@ database: attendance_details
         semester VARCHAR(10) NOT NULL,
         faculty_id VARCHAR(100),
         subject_name VARCHAR(255) UNIQUE,
-        total_attendance INT,
-        INDEX idx_faculty_id (faculty_id)  
+        total_attendance INT  
     );
 

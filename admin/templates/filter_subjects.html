@@ -3,33 +3,37 @@
 {% block title %} Allocate subjects {% endblock %}
 
 {% block content %}
+<style>
+  @import url("/admin/static/sidebar_style.css");
+</style>
+
   <div class="container-fluid">
     <div class="row">
       <!-- Sidebar -->
-      <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-        <div class="sidebar-sticky">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link active" href="/admin/time_table_manage">
-                <i class="fas fa-clock mr-2"></i> Time Table Management
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/faculty_manage">
-                <i class="fas fa-user-tie mr-2"></i> Faculty Management
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/student_manage">
-                <i class="fas fa-user-graduate mr-2"></i> Student Management
-              </a>
-            </li>
-          </ul>
-        </div>
+      <nav id="sidebar" class="col-md-4 col-lg-3 d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+              <ul class="nav flex-column">
+                  <li class="nav-item">
+                      <a class="nav-link font-weight-bold" href="/admin/time_table_manage">
+                          <i class="fas fa-clock mr-2"></i> Time Table Management
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link active font-weight-bold" href="/admin/faculty_manage">
+                          <i class="fas fa-user-tie mr-2"></i> Faculty Management
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link font-weight-bold" href="/admin/student_manage">
+                          <i class="fas fa-user-graduate mr-2"></i> Student Management
+                      </a>
+                  </li>
+              </ul>
+          </div>
       </nav>
 
       <!-- Main Content -->
-      <div class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+      <main role="main" class="col-md-9 col-lg-9 px-md-4">
         <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
           <h1 class="h2">Filter subjects and classes</h1>
         </div>
@@ -56,6 +60,7 @@
         </div>
         </div>
       </div>
+      </main>
     </div>
   </div>
 

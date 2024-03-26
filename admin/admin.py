@@ -4,7 +4,10 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 import string
 import random
+
 from email.mime.text import MIMEText
+import json
+
 import os
 from dotenv import load_dotenv
 import smtplib
@@ -67,13 +70,45 @@ def admin_register():
 @admin.route('/admin_dashboard', methods=['GET', 'POST'])
 def admin_dashboard():
     if 'admin_email' in session:
+        
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT distinct(semester) FROM attendance_details.college_details")
+        sem_list = cursor.fetchall()
+        cursor.close()
+        
+        sem = request.form.get('semester')
+        
+        cursor = mysql.connection.cursor()
+        if sem:
+            cursor.execute("SELECT subject_name, total_attendance FROM attendance_details.college_details where semester = %s",(sem,))
+            data = cursor.fetchall()
+        
+        else:
+            cursor.execute("SELECT subject_name, total_attendance FROM attendance_details.college_details")
+            data = cursor.fetchall()
+        
+        cursor.close()
+        
+        mylabels=[]
+        info=[]
+        
+        for item in data:
+            mylabels.append(item[0])
+            info.append(item[1])
+        
+        
+        chart_data = {
+            "labels": mylabels,
+            "values": info
+        }
+        
+        chart_data = json.dumps(chart_data)
 
-        return render_template('admin_dashboard.html')
+        return render_template('admin_dashboard.html', sem_list= sem_list, chart_data = chart_data, sem = sem)
     else:
         return redirect(url_for('admin.admin_login'))
 
 # time table management
-
 
 @admin.route('/time_table_manage', methods=['GET', 'POST'])
 def time_table():
@@ -143,16 +178,17 @@ def add_subject_list():
                     cursor.close()
 
             cursor = mysql.connection.cursor()
-            cursor.execute(
-                "SELECT subject_name FROM attendance_details.college_details")
+            cursor.execute("SELECT subject_name FROM attendance_details.college_details")
             all_subjects = cursor.fetchall()
-
+            
             for classname_tuple in all_subjects:
                 classname = classname_tuple[0]
-                create_table_query = f"CREATE TABLE attendance_details.{classname} (enrollment BIGINT PRIMARY KEY, name VARCHAR(255), faculty_id VARCHAR(255), percentage DECIMAL(5,2), FOREIGN KEY (faculty_id) REFERENCES college_details(faculty_id))"
+                
+                
+                create_table_query = f"CREATE TABLE attendance_details.{classname} (enrollment BIGINT PRIMARY KEY, name VARCHAR(255), faculty_id VARCHAR(255), percentage DECIMAL(5,2))"
                 cursor.execute(create_table_query)
                 mysql.connection.commit()
-
+                
             cursor.close()
 
             msg = "Subjects added successfully!"
@@ -258,7 +294,7 @@ def filter_subjects():
     else:
         return redirect(url_for('admin.admin_login'))
 
-# Allocate subjects route
+#Allocate subjects route
 @admin.route('/faculty_manage/allocate_subjects', methods=['GET', 'POST'])
 def allocate_subjects():
     msg = ""
@@ -322,8 +358,11 @@ def modify_allocated_sub():
             faculty_id = request.form.get('faculty_id')
                
             cursor = mysql.connection.cursor()
+            cursor.execute(f"UPDATE attendance_details.{subject_name} SET faculty_id = %s",(faculty_id,))
+            mysql.connection.commit()
             cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
             mysql.connection.commit()
+
             cursor.close()
                 
             msg = "Allocation Modified successfully!"
