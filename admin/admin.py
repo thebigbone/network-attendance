@@ -435,11 +435,10 @@ def upload():
             sql = 'SELECT email, password from wifiattendance.student_accounts;'
             cursor.execute(sql)
             
-            email, password = cursor.fetchall()
-            
-            print(email, password)
-            
-            for email1, password1 in email, password:
+            rows = cursor.fetchall()
+
+            print(rows)
+            for email1, password1 in rows:
                 body = f"Email: {email1} \n Password: {password1}"
                 subject = "Login credentials for Attendance."
                 background_thread = threading.Thread(target=send_email, args=(email1, subject, body))
