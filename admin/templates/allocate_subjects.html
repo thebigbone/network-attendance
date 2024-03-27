@@ -3,9 +3,6 @@
 {% block title %} Allocate subjects {% endblock %}
 
 {% block content %}
-<style>
-  @import url("/admin/static/sidebar_style.css");
-</style>
 
 <div class="container-fluid">
     <div class="row">
@@ -39,8 +36,11 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    {% if msg %}
-                    <p>{{ msg }}</p>
+                    {% if msg == 'Allocation failed! Try again later.' %}
+                        <p class="alert alert-danger">{{ msg }}</p>
+                    {% endif %}
+                    {% if msg == 'Subjects allocated successfully!' %}
+                        <p class="alert alert-success">{{ msg }}</p>
                     {% endif %}
                     <form action="{{ url_for('admin.allocate_subjects',acad=acad, dept=dept, sem=sem)}}" method="post">
                         <table class="table table-bordered">

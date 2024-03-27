@@ -3,9 +3,7 @@
 {% block title %} Modify Allocations {% endblock %}
 
 {% block content %}
-<style>
-  @import url("/admin/static/sidebar_style.css");
-</style>
+
   <div class="container-fluid">
     <div class="row">
       <!-- Sidebar -->
@@ -38,8 +36,11 @@
         </div>
         <div class="card">
           <div class="card-body">
-            {% if msg %}
-                <p>{{ msg }}</p>
+            {% if msg == 'Allocation was not modified!' %}
+                <p class="alert alert-danger">{{ msg }}</p>
+            {% endif %}
+            {% if msg == 'Allocation Modified successfully!' %}
+                <p class="alert alert-success">{{ msg }}</p>
             {% endif %}
             <form action="{{ url_for('admin.modify_allocated_sub',acad=acad,dept=dept,sem=sem) }}" method="post">
              <table class="table table-bordered">

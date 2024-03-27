@@ -3,9 +3,7 @@
 {% block title %} Delete Subject List {% endblock %}
 
 {% block content %}
-<style>
-  @import url("/admin/static/sidebar_style.css");
-</style>
+
 
 <div class="container-fluid">
   <div class="row">
@@ -45,24 +43,30 @@
             </div>
             <div class="card-body">
               {% if msg %}
-                  <p>{{ msg }}</p>
+                  {% if msg == 'Subjects removed successfully! Add new subjects from the Add Subject menu.' %}
+                      <p class="alert alert-success">{{ msg }}</p>
+                  {% else %}
+                      <p class="alert alert-danger">{{ msg }}</p>
+                  {% endif %}
               {% endif %}
+              
               <form action="{{ url_for('admin.delete_subject_list') }}" method="post">
                 
                 <div class="form-group">
                  <label for="academic_year">Academic Year:</label>
-                 <input type="text" class="form-control" id="academic_year" name="academic_year" required>
-                </div>
-                
-                <div class="form-group">
-                  <label for="semester">Semester:</label>
-                  <input type="text" class="form-control" id="semester" name="semester" required>
+                 <input type="text" class="form-control" id="academic_year" name="academic_year" placeholder="2023-24" required>
                 </div>
                 
                 <div class="form-group">
                   <label for="department">Department:</label>
-                  <input type="text" class="form-control" id="department" name="department" required>
+                  <input type="text" class="form-control" id="department" name="department" placeholder="CE" required>
                 </div>
+                
+                <div class="form-group">
+                  <label for="semester">Semester:</label>
+                  <input type="text" class="form-control" id="semester" name="semester" placeholder="6CE" required>
+                </div>
+                
                 
                 <div class="form-group">
                   <label for="subject">Subject tables related to:</label>

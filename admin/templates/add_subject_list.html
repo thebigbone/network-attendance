@@ -3,9 +3,7 @@
 {% block title %} Add Subject List {% endblock %}
 
 {% block content %}
-<style>
-  @import url("/admin/static/sidebar_style.css");
-</style>
+
   <div class="container-fluid">
     <div class="row">
       <!-- Sidebar -->
@@ -39,8 +37,13 @@
         <div class="card">
           <div class="card-body">
             {% if msg %}
-                <p>{{ msg }}</p>
+                {% if msg == 'Subjects added successfully!' %}
+                    <p class="alert alert-success">{{ msg }}</p>
+                {% else %}
+                    <p class="alert alert-danger">{{ msg }}</p>
+                {% endif %}
             {% endif %}
+
             <form action="{{ url_for('admin.add_subject_list') }}" method="post">
               <div class="form-group">
                <label for="academic_year">Academic Year:</label>
@@ -86,8 +89,9 @@
                   </tbody>
                 </table>
               </div>
-              
-              <button type="submit" class="btn btn-primary">Submit</button>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
             </form>
           </div>
         </div>

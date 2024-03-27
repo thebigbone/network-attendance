@@ -16,7 +16,6 @@ import threading
 load_dotenv()
 
 
-
 admin = Blueprint("admin", __name__, static_folder="static",
                   template_folder="templates")
 
@@ -119,8 +118,6 @@ def time_table():
         return redirect(url_for('admin.admin_login'))
 
 # Add new subjects
-
-
 @admin.route('/time_table_manage/add_subject_list', methods=['GET', 'POST'])
 def add_subject_list():
     if 'admin_email' in session:
@@ -134,118 +131,122 @@ def add_subject_list():
             total_sub = int(request.form['num_subjects'])
 
             sub_details = {}
-
-            for i in range(total_sub):
-                key = str(i + 1)
-                sub_details[key] = {
-                    'name': request.form[f"subject_name_{key}"],
-                    'code': request.form[f"subject_code_{key}"],
-                    'lecture': 'y' if 'lecture_' + key in request.form else 'n',
-                    'lab': 'y' if 'lab_' + key in request.form else 'n',
-                    'tutorial': 'y' if 'tutorial_' + key in request.form else 'n'
-                }
-
-            for i in range(section):
-
-                for j in range(total_sub):
-                    cursor = mysql.connection.cursor()
-                    key = str(j + 1)
-                    sub_info = sub_details[key]
-                    subject_name_prefix = f"{sem}{i+1}_{sub_info['name']}_{sub_info['code']}"
-
-                    if sub_info['lecture'] == 'y':
-                        lecture_subject_name = f"{subject_name_prefix}_lecture"
-                        cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name,total_attendance) VALUES (%s, %s, %s, %s, 0)",
-                                       (acad_year, dept, sem, lecture_subject_name))
-
-                    if sub_info['lab'] == 'y':
-                        lab_subject_name = f"{subject_name_prefix}_lab"
-
-                        for batch_name in ['BatchA', 'BatchB', 'BatchC', 'BatchD']:
-                            lab_subject_batch_name = f"{lab_subject_name}_{batch_name}"
-                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name, total_attendance) VALUES (%s, %s, %s, %s, 0)",
-                                           (acad_year, dept, sem, lab_subject_batch_name))
-
-                    if sub_info['tutorial'] == 'y':
-                        tutorial_subject_name = f"{subject_name_prefix}_tutorial"
-
-                        for batch_name in ['BatchA', 'BatchB', 'BatchC', 'BatchD']:
-                            tutorial_subject_batch_name = f"{tutorial_subject_name}_{batch_name}"
-                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name, total_attendance) VALUES (%s, %s, %s, %s, 0)",
-                                           (acad_year, dept, sem, tutorial_subject_batch_name))
-
-                    mysql.connection.commit()
-                    cursor.close()
-
-            cursor = mysql.connection.cursor()
-            cursor.execute("SELECT subject_name FROM attendance_details.college_details")
-            all_subjects = cursor.fetchall()
             
-            for classname_tuple in all_subjects:
-                classname = classname_tuple[0]
-                
-                
-                create_table_query = f"CREATE TABLE attendance_details.{classname} (enrollment BIGINT PRIMARY KEY, name VARCHAR(255), faculty_id VARCHAR(255), percentage DECIMAL(5,2))"
-                cursor.execute(create_table_query)
-                mysql.connection.commit()
-                
-            cursor.close()
+            try:
+                for i in range(total_sub):
+                    key = str(i + 1)
+                    sub_details[key] = {
+                        'name': request.form[f"subject_name_{key}"],
+                        'code': request.form[f"subject_code_{key}"],
+                        'lecture': 'y' if 'lecture_' + key in request.form else 'n',
+                        'lab': 'y' if 'lab_' + key in request.form else 'n',
+                        'tutorial': 'y' if 'tutorial_' + key in request.form else 'n'
+                    }
 
-            msg = "Subjects added successfully!"
+                for i in range(section):
+                    for j in range(total_sub):
+                        cursor = mysql.connection.cursor()
+                        key = str(j + 1)
+                        sub_info = sub_details[key]
+                        subject_name_prefix = f"{sem}{i+1}_{sub_info['name']}_{sub_info['code']}"
+
+                        if sub_info['lecture'] == 'y':
+                            lecture_subject_name = f"{subject_name_prefix}_lecture"
+                            cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name,total_attendance) VALUES (%s, %s, %s, %s, 0)",
+                                           (acad_year, dept, sem, lecture_subject_name))
+
+                        if sub_info['lab'] == 'y':
+                            lab_subject_name = f"{subject_name_prefix}_lab"
+
+                            for batch_name in ['BatchA', 'BatchB', 'BatchC', 'BatchD']:
+                                lab_subject_batch_name = f"{lab_subject_name}_{batch_name}"
+                                cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name, total_attendance) VALUES (%s, %s, %s, %s, 0)",
+                                               (acad_year, dept, sem, lab_subject_batch_name))
+
+                        if sub_info['tutorial'] == 'y':
+                            tutorial_subject_name = f"{subject_name_prefix}_tutorial"
+
+                            for batch_name in ['BatchA', 'BatchB', 'BatchC', 'BatchD']:
+                                tutorial_subject_batch_name = f"{tutorial_subject_name}_{batch_name}"
+                                cursor.execute("INSERT INTO attendance_details.college_details (academic_year, department, semester, subject_name, total_attendance) VALUES (%s, %s, %s, %s, 0)",
+                                               (acad_year, dept, sem, tutorial_subject_batch_name))
+
+                        mysql.connection.commit()
+                        cursor.close()
+
+                cursor = mysql.connection.cursor()
+                cursor.execute("SELECT subject_name FROM attendance_details.college_details")
+                all_subjects = cursor.fetchall()
+
+                for classname_tuple in all_subjects:
+                    classname = classname_tuple[0]
+
+                    create_table_query = f"CREATE TABLE attendance_details.{classname} (enrollment BIGINT PRIMARY KEY, name VARCHAR(255), faculty_id VARCHAR(255), percentage DECIMAL(5,2))"
+                    cursor.execute(create_table_query)
+                    mysql.connection.commit()
+
+                cursor.close()
+
+                msg = "Subjects added successfully!"
+                
+            except Exception as e:
+                print(f"Error occurred: {str(e)}")
+                msg = "An error occurred while adding subjects. Please try again."
 
         return render_template('add_subject_list.html', msg=msg)
     else:
         return redirect(url_for('admin.admin_login'))
 
-# Add new subjects
 
+#Delete subjects
 @admin.route('/time_table_manage/delete_subject_list', methods=['GET', 'POST'])
 def delete_subject_list():
-    msg = ""
     if 'admin_email' in session:
-
+        subjects = []
+        msg=""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT subject_name FROM attendance_details.college_details WHERE subject_name LIKE '%\_lecture'")
         all_subjects = cursor.fetchall()
         cursor.close()
 
-        subjects = []
-
         if all_subjects:
             for classname_tuple in all_subjects:
                 classname = classname_tuple[0]
                 parts = classname.split('_')
                 classname = '_'.join(parts[:2])
-
                 subjects.append(classname)
 
         if request.method == 'POST':
-
             acad_year = request.form.get('academic_year')
             dept = request.form.get('department')
             sem = request.form.get('semester')
             selected_sub = request.form.get('subject')
 
             cursor = mysql.connection.cursor()
-
-            cursor.execute("DELETE FROM attendance_details.college_details WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name LIKE %s",
-                           (acad_year, dept, sem, f'{selected_sub}%'))
-            rows_removed = cursor.rowcount
-            mysql.connection.commit()
-
-            cursor.execute(
-                "SELECT CONCAT('DROP TABLE IF EXISTS attendance_details.', table_name, ';') FROM information_schema.tables WHERE table_schema = 'attendance_details' AND table_name LIKE %s", (f'{selected_sub}%',))
-            drop_queries = cursor.fetchall()
-
-            for i in drop_queries:
-                cursor.execute(i[0])
-
-            mysql.connection.commit()
-            cursor.close()
-
-            if rows_removed > 0:
-                msg = "Subjects removed successfully! Add new subjects from Add Subject Menu."
+            
+            try:
+                cursor.execute("DELETE FROM attendance_details.college_details WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name LIKE %s",
+                               (acad_year, dept, sem, f'{selected_sub}%'))
+                rows_removed = cursor.rowcount
+                mysql.connection.commit()
+    
+                cursor.execute(
+                    "SELECT CONCAT('DROP TABLE IF EXISTS attendance_details.', table_name, ';') FROM information_schema.tables WHERE table_schema = 'attendance_details' AND table_name LIKE %s", (f'{selected_sub}%',))
+                drop_queries = cursor.fetchall()
+    
+                for query in drop_queries:
+                    cursor.execute(query[0])
+    
+                mysql.connection.commit()
+                cursor.close()
+    
+                if rows_removed > 0:
+                    msg = "Subjects removed successfully! Add new subjects from the Add Subject menu."
+            except Exception as e:
+                print(f"Error occurred: {str(e)}")
+                msg = "An error occurred while deleting subjects. Please try again."
+            
 
         return render_template('delete_subject_list.html', msg=msg, subjects=subjects)
     else:
@@ -315,17 +316,21 @@ def allocate_subjects():
         cursor.close()
         
         if request.method=='POST':
-           
-            for subject in subject_list:
-                subject_name = subject[0]
-                faculty_id = request.form.get(subject_name)
-               
-                cursor = mysql.connection.cursor()
-                cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
-                mysql.connection.commit()
-                cursor.close()
+            
+            try:
+                for subject in subject_list:
+                    subject_name = subject[0]
+                    faculty_id = request.form.get(subject_name)
+                   
+                    cursor = mysql.connection.cursor()
+                    cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
+                    mysql.connection.commit()
+                    cursor.close()
                 
-            msg = "Subjects allocated successfully!"
+                msg = "Subjects allocated successfully!"
+                
+            except Exception:
+                msg="Allocation failed! Try again later."
 
         return render_template('allocate_subjects.html', msg=msg, subject_list=subject_list, faculty_list=faculty_list, acad= acad, dept= dept, sem=sem)
     else:
@@ -356,16 +361,20 @@ def modify_allocated_sub():
            
             subject_name = request.form.get('subject')
             faculty_id = request.form.get('faculty_id')
-               
-            cursor = mysql.connection.cursor()
-            cursor.execute(f"UPDATE attendance_details.{subject_name} SET faculty_id = %s",(faculty_id,))
-            mysql.connection.commit()
-            cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
-            mysql.connection.commit()
-
-            cursor.close()
+            
+            try:
+                cursor = mysql.connection.cursor()
+                cursor.execute(f"UPDATE attendance_details.{subject_name} SET faculty_id = %s",(faculty_id,))
+                mysql.connection.commit()
+                cursor.execute("UPDATE attendance_details.college_details SET faculty_id = %s WHERE academic_year = %s AND department = %s AND semester = %s AND subject_name = %s", (faculty_id, acad, dept, sem, subject_name))
+                mysql.connection.commit()
+    
+                cursor.close()
+                msg = "Allocation Modified successfully!"
                 
-            msg = "Allocation Modified successfully!"
+            except Exception:
+                msg = "Allocation was not modified!"
+                             
 
         return render_template('modify_allocated_sub.html', msg=msg, subject_list=subject_list, faculty_list=faculty_list, acad= acad, dept= dept, sem=sem)
     else:

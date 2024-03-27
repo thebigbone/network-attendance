@@ -5,7 +5,7 @@
     left: 0;
     height: 100%; 
     z-index: 1000;
-    background-color: #f8f9fa;
+    background-color: #3d4b64;
     border-right: 1px solid #dee2e6;
     overflow-y: auto; 
 }
@@ -22,12 +22,12 @@
 }
 
 .sidebar-sticky .nav-link.active {
-    background-color: #007bff;
+    background-color: #2b4f74;
     color: #fff;
 }
 
 .sidebar-sticky .nav-link:hover {
-    background-color: #0069d9;
+    background-color: #2b4f74;
     color: #fff;
 }
 
