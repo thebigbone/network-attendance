@@ -1,13 +1,13 @@
 #sidebar {
-    width: 300px; 
+    width: 300px;
     position: fixed;
     top: 0;
     left: 0;
-    height: 100%; 
+    height: 100%;
     z-index: 1000;
     background-color: #3d4b64;
     border-right: 1px solid #dee2e6;
-    overflow-y: auto; 
+    overflow-y: auto;
 }
 
 .sidebar-sticky {
@@ -15,10 +15,10 @@
 }
 
 .sidebar-sticky .nav-link {
-    padding: 12px 20px; 
-    font-size: 18px; 
+    padding: 12px 20px;
+    font-size: 18px;
     color: #343a40;
-    transition: all 0.3s ease; 
+    transition: all 0.3s ease;
 }
 
 .sidebar-sticky .nav-link.active {
@@ -31,7 +31,7 @@
     color: #fff;
 }
 
-.sidebar-sticky .nav-link + .nav-link {
+.sidebar-sticky .nav-link+.nav-link {
     margin-top: 5px;
 }
 
@@ -41,5 +41,5 @@
 
 
 main {
-    margin-left: 300px; 
+    margin-left: 300px;
 }

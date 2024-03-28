@@ -438,21 +438,8 @@ def upload():
                     
                     cursor.close()
             
-
             # sending emails    
-            cursor = mysql.connection.cursor()
-            sql = 'SELECT email, password from wifiattendance.student_accounts;'
-            cursor.execute(sql)
-            
-            rows = cursor.fetchall()
-
-            print(rows)
-            for email1, password1 in rows:
-                body = f"Email: {email1} \n Password: {password1}"
-                subject = "Login credentials for Attendance."
-                background_thread = threading.Thread(target=send_email, args=(email1, subject, body))
-                
-                background_thread.start()
+            send_email_from_table('student_accounts')
             
             message = 'Students added and allocated successfully! Sending emails for login credentials now. It will take a few minutes to arrive.'
             
@@ -461,7 +448,9 @@ def upload():
             for index, row in df.iterrows():
                 insert_data_faculty(row)
 
-            message = 'Faculties added successfully!'
+            send_email_from_table('faculty_accounts')
+            
+            message = 'Faculties added successfully! Sending emails for login credentials now. It will take a few minutes to arrive.'
 
             return render_template('add_faculty_list.html', message=message)
         
@@ -534,3 +523,18 @@ def send_email(to_email, subject, body, html_body=None):
         print('email sent')
     except Exception as e:
         print(f'an error occurred: {e}')
+        
+def send_email_from_table(table_name):
+    cursor = mysql.connection.cursor()
+    
+    sql = f'SELECT email, password FROM wifiattendance.{table_name};'
+    cursor.execute(sql)
+    
+    rows = cursor.fetchall()
+    print(rows)
+    
+    for email, password in rows:
+        body = f"Email: {email} \n Password: {password}"
+        subject = "Login credentials for Attendance."
+        background_thread = threading.Thread(target=send_email, args=(email, subject, body))
+        background_thread.start()

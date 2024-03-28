@@ -154,7 +154,7 @@ def forgot_password():
         
         sql = f"SELECT id FROM wifiattendance.student_accounts where email = '{email}';"
         cursor.execute(sql)
-        user_id = cursor.fetchone()[0]
+        user_id = cursor.fetchone()
         
         session['user_id'] = user_id
         print("user session: ", session.get('user_id'))
@@ -173,6 +173,9 @@ def forgot_password():
             
             send_email(email, subject, body)
             return redirect(url_for('student.reset_password'))
+        else:
+            msg = 'User not found.'
+            return render_template('forgot_password.html', msg=msg)
         
     return render_template('forgot_password.html')
 
