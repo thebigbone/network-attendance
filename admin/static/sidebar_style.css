@@ -1,0 +1,45 @@
+#sidebar {
+    width: 300px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1000;
+    background-color: #3d4b64;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+}
+
+.sidebar-sticky {
+    padding-top: 20px;
+}
+
+.sidebar-sticky .nav-link {
+    padding: 12px 20px;
+    font-size: 18px;
+    color: #343a40;
+    transition: all 0.3s ease;
+}
+
+.sidebar-sticky .nav-link.active {
+    background-color: #2b4f74;
+    color: #fff;
+}
+
+.sidebar-sticky .nav-link:hover {
+    background-color: #2b4f74;
+    color: #fff;
+}
+
+.sidebar-sticky .nav-link+.nav-link {
+    margin-top: 5px;
+}
+
+#sidebar {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+main {
+    margin-left: 300px;
+}

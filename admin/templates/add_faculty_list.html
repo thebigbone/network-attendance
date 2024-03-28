@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %} Add Student List {% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-4 col-lg-3 d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold" href="/admin/time_table_manage">
+                            <i class="fas fa-clock mr-2"></i> Time Table Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active font-weight-bold" href="/admin/faculty_manage">
+                            <i class="fas fa-user-tie mr-2"></i> Faculty Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold" href="/admin/student_manage">
+                            <i class="fas fa-user-graduate mr-2"></i> Student Management
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main role="main" class="col-md-9 col-lg-9 px-md-4">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Add Faculty List</h1>
+            </div>
+            <div class="row">
+                <div class="col-md-8 mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Faculty Details</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if message %}
+                            <p class="alert alert-success">{{ message }}</p>
+                            {% endif %}
+                            <p class="alert alert-danger">Note: Upload data according to the sample format.</p>
+                            <div class="text-center">
+                                <form action="{{ url_for('admin.upload') }}" method="post" enctype="multipart/form-data" class="mt-3">
+                                    <div class="text-center">
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="inputGroupFile" name="file" required>
+                                            <label class="custom-file-label" for="inputGroupFile">Choose file</label>
+                                        </div>
+                                        <div class="text-center"><br>
+                                            <button type="submit" class="btn btn-primary">Upload</button>
+                                        </div>
+                                    </div>
+                                </form><br>
+                                <!-- <button type="button" class="btn btn-primary mb-3">Upload Data</button> -->
+                                <button type="button" class="btn btn-success mb-3" onclick="window.location.href='/admin/sample1'">Download Sample Format</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    document.getElementById("inputGroupFile").addEventListener("change", function() {
+        var fileName = this.files[0].name;
+        var label = document.querySelector(".custom-file-label");
+        label.textContent = fileName;
+    });
+</script>
+{% endblock %}

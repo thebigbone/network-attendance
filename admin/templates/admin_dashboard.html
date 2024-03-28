@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %} Admin Dashboard {% endblock %}
+
+{% block content %}
+
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="col-md-4 col-lg-3 d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link font-weight-bold" href="/admin/time_table_manage">
+              <i class="fas fa-user-graduate mr-2"></i> Time Table Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link font-weight-bold" href="/admin/faculty_manage">
+              <i class="fas fa-user-graduate mr-2"></i> Faculty Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link font-weight-bold" href="/admin/student_manage">
+              <i class="fas fa-user-graduate mr-2"></i> Student Management
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!-- Main Content -->
+    <main role="main" class="col-md-8 col-lg-9 px-md-4">
+      <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Admin Dashboard</h1>
+      </div>
+      <form id="semesterForm" action="{{ url_for('admin.admin_dashboard') }}" method="POST">
+        <div class="form-group">
+          <label for="semester">Semester:</label>
+          <select name="semester" class="form-control" id="semester">
+            <option value="">Select a semester</option>
+            {% for sem_name in sem_list %}
+            <option value="{{ sem_name[0] }}" {% if sem == sem_name[0] %} selected {% endif %}>{{ sem_name[0] }}</option>
+            {% endfor %}
+        </select>
+
+        </div>
+      </form>
+
+      <!-- Center the plot -->
+      <div class="d-flex justify-content-center">
+        <div id="plotly-chart" style="margin-top: 20px;"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Include chartjs-plotly library from CDN -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+  
+  document.getElementById('semester').addEventListener('change', function() {
+    document.getElementById('semesterForm').submit();
+  });
+
+  var chartData = {{ chart_data | safe }};
+  
+  var trace = {
+    x: chartData.labels,
+    y: chartData.values,
+    type: 'bar',
+    marker: {
+      color: 'rgb(119, 201, 212)',
+      line: {
+        color: 'rgb(8,48,107)',
+        width: 1.5
+      }
+    }
+  };
+
+  var layout = {
+    title: 'Attendance by Subjects', 
+    xaxis: {
+      title: 'Subjects (hover to see)',
+      showticklabels: false
+    },
+    yaxis: {
+      title: 'Number of Attendance taken',
+      titlefont: {
+        size: 16,
+        color: 'rgb(107, 107, 107)'
+      },
+      tickfont: {
+        size: 14,
+        color: 'rgb(107, 107, 107)'
+      }
+    },
+    height: 500,
+    width: 1000,
+    margin: {
+      l: 50,
+      r: 50,
+      b: 150,
+      t: 100,
+      pad: 5
+    }
+  };
+
+  Plotly.newPlot('plotly-chart', [trace], layout);
+</script>
+
+{% endblock %}

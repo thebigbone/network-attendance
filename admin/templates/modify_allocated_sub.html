@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %} Modify Allocations {% endblock %}
+
+{% block content %}
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav id="sidebar" class="col-md-4 col-lg-3 d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+              <ul class="nav flex-column">
+                  <li class="nav-item">
+                      <a class="nav-link font-weight-bold" href="/admin/time_table_manage">
+                          <i class="fas fa-clock mr-2"></i> Time Table Management
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link active font-weight-bold" href="/admin/faculty_manage">
+                          <i class="fas fa-user-tie mr-2"></i> Faculty Management
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link font-weight-bold" href="/admin/student_manage">
+                          <i class="fas fa-user-graduate mr-2"></i> Student Management
+                      </a>
+                  </li>
+              </ul>
+          </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main role="main" class="col-md-9 col-lg-9 px-md-4">
+        <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Modify Allocated Subjects</h1>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            {% if msg == 'Allocation was not modified!' %}
+                <p class="alert alert-danger">{{ msg }}</p>
+            {% endif %}
+            {% if msg == 'Allocation Modified successfully!' %}
+                <p class="alert alert-success">{{ msg }}</p>
+            {% endif %}
+            <form action="{{ url_for('admin.modify_allocated_sub',acad=acad,dept=dept,sem=sem) }}" method="post">
+             <table class="table table-bordered">
+                 <thead>
+                     <tr>
+                         <th>Subject</th>
+                         <th>Faculty</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                    <tr>
+                        <td>
+                            <select name="subject" class="form-control select2" style="width: 100%;">
+                                {% for subject in subject_list %}
+                                <option value="{{ subject[0] }}">{{ subject[0] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select name="faculty_id" class="form-control select2" style="width: 100%;">
+                                {% for name, faculty_id in faculty_list %}
+                                <option value="{{ faculty_id }}">{{ name }} - {{ faculty_id }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+
+             </table>
+                <button type="submit" class="btn btn-primary">Modify Allocation</button>
+            </form>
+        </div>
+        </div>
+      </div>
+      </main>
+    </div>
+  </div>
+
+<!-- Include Select2 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+<!-- Include jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Include Select2 JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<!-- Initialize Select2 -->
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{% endblock %}

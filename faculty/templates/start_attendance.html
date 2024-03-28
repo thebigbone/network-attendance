@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+    
+{% block title %} Start Attendance {% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="card p-5">
+            <div class="card-header text-center">
+                <h1 class="card-title">Start Attendance</h1>
+            </div>
+            <div class="card-body text-center">
+                <p>Subject: {{ selected_subject }}</p>
+                <p>Attendance ID: {{ attendance_id }}</p>
+                
+                    <div id="countdown">Time remaining: <div id="timer"></div></div>
+                    <br>
+                    <form id="stopForm" action="/faculty/stop_attendance" method="post">
+                        <input type="hidden" name="attendance_id" value="{{ attendance_id }}">
+                        <button type="submit" class="btn btn-danger btn-block" id="stopAttendanceBtn">Stop Attendance</button>
+                    </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.onload = function() {
+            var selectedTime = localStorage.getItem('selectedTime');
+            console.log(selectedTime)
+            startTimer(selectedTime);
+            localStorage.clear();
+        };
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script>
+    // start timer
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            console.log('Connected to the server');
+        });
+
+        socket.on('update_timer', function(timerValue) {
+            document.getElementById('timer').innerText = timerValue;
+            if (timerValue === 0) {
+            window.location.href = '/faculty/stop_attendance';
+        }
+        });
+        function startTimer(selectedValue) {
+            console.log("starting timer")
+            socket.emit('start_timer', selectedValue);
+        }
+    </script>
+    </script>
+
+{% endblock %}

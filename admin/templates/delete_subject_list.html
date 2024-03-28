@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %} Delete Subject List {% endblock %}
+
+{% block content %}
+
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="col-md-4 col-lg-3 d-md-block bg-light sidebar">
+        <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active font-weight-bold" href="/admin/time_table_manage">
+                        <i class="fas fa-clock mr-2"></i> Time Table Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link font-weight-bold" href="/admin/faculty_manage">
+                        <i class="fas fa-user-tie mr-2"></i> Faculty Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link font-weight-bold" href="/admin/student_manage">
+                        <i class="fas fa-user-graduate mr-2"></i> Student Management
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main role="main" class="col-md-9 col-lg-9 px-md-4">
+      <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Delete Subject List</h1>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-8 mx-auto">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Delete Subject</h5>
+            </div>
+            <div class="card-body">
+              {% if msg %}
+                  {% if msg == 'Subjects removed successfully! Add new subjects from the Add Subject menu.' %}
+                      <p class="alert alert-success">{{ msg }}</p>
+                  {% else %}
+                      <p class="alert alert-danger">{{ msg }}</p>
+                  {% endif %}
+              {% endif %}
+              
+              <form action="{{ url_for('admin.delete_subject_list') }}" method="post">
+                
+                <div class="form-group">
+                 <label for="academic_year">Academic Year:</label>
+                 <input type="text" class="form-control" id="academic_year" name="academic_year" placeholder="2023-24" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="department">Department:</label>
+                  <input type="text" class="form-control" id="department" name="department" placeholder="CE" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="semester">Semester:</label>
+                  <input type="text" class="form-control" id="semester" name="semester" placeholder="6CE" required>
+                </div>
+                
+                
+                <div class="form-group">
+                  <label for="subject">Subject tables related to:</label>
+                  
+                  <select class="form-control select2" id="subject" name="subject" required>
+                    <option value="" disabled selected>Select a Subject</option>
+                    
+                    {% for subject in subjects %}
+                      <option value="{{ subject }}">{{ subject }}</option>
+                    {% endfor %}
+                    
+                  </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Delete subject</button>
+          </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Include Select2 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+<!-- Include jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Include Select2 JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<!-- Initialize Select2 -->
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{% endblock %}

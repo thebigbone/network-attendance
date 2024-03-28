@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %} Faculty Dashboard {% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-5 position-relative">
+      <div class="dropdown" style="position: absolute; top: 5px; right: 5px;">
+          <button onclick="toggleDropdown()" class="btn btn-primary">Settings</button>
+          <div class="dropdown-content" id="settingsDropdown" style="display: none;">
+            <a href="/faculty/modify_attendance">Modify Attendance</> <br>
+            <a href="/faculty/apply_filter">Filter Download</a>
+          </div>
+      </div>
+
+      <div class="card-header text-center pt-5">
+        <h1 class="card-title">Faculty Dashboard</h1>
+      </div>
+
+      <div class="card-body">
+        {% if date_error %}
+          <div class="alert alert-danger">{{ date_error }}</div>
+        {% endif %}
+        <form action="{{ url_for('faculty.start_attendance') }}" method="post">
+          <div class="form-group">
+            <label for="date" class="font-weight-bold">Select Date: </label>
+            <input type="date" name="date" placeholder="Date" class="form-control" required />
+          </div>
+
+          <label for="timer" class="font-weight-bold">Choose Timer Duration: </label>
+          <div class="form-group text-center">
+            <input type="radio" name="time" value="30" class="form-check-label" /> 30 seconds
+            <input type="radio" name="time" value="45" class="form-check-label" /> 45 seconds
+            <input type="radio" name="time" value="60" class="form-check-label" /> 60 seconds
+          </div>
+
+          <div class="form-group">
+            <label for="subject" class="font-weight-bold">Select Subject: </label>
+            <select name="subject" id="subject" class="form-control" required>
+              <option value="" disabled selected>Select a Subject</option>
+              {% for subject in subjects %}
+                <option value="{{ subject[0] }}">{{ subject[0] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <input type="hidden" name="selected_subject" value="{{ session['selected_subject'] }}">
+          <button type="submit" class="btn btn-primary btn-block">Start Attendance</button>
+        </form>
+      </div>
+    </div>
+  </div>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var radios = document.getElementsByName('time');
+            console.log('time from the radio button: ', radios)
+            for (var i = 0; i < radios.length; i++) {
+            if (radios[i].checked) {
+                localStorage.setItem('selectedTime', radios[i].value);
+                console.log('selecting radio and storing it: ', selectedTime);
+                break;
+                }
+            }
+        });
+        </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+  <script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    socket.on('connect', function() {
+      console.log('Connected to the server');
+    });
+
+    socket.on('update_timer', function(timerValue) {
+      document.getElementById('timer').innerText = timerValue;
+    });
+    
+    function toggleDropdown() {
+    var dropdown = document.getElementById('settingsDropdown');
+    dropdown.style.display = (dropdown.style.display === 'none') ? 'block' : 'none';
+    }
+    
+  </script>
+{% endblock %}

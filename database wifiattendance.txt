@@ -1,21 +1,43 @@
 database: wifiattendance
 
-CREATE TABLE faculty_accounts (
-    id INT NOT NULL AUTO_INCREMENT,
-    faculty_id VARCHAR(255) NOT NULL UNIQUE,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    teaching_class VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id)
-);
+    CREATE TABLE faculty_accounts (
+        id INT NOT NULL AUTO_INCREMENT,
+        faculty_id VARCHAR(255) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        PRIMARY KEY (id)
+    );
+    
+    
+    CREATE TABLE student_accounts (
+        id INT NOT NULL AUTO_INCREMENT,
+        enrollment BIGINT,
+        name VARCHAR(255),
+        email VARCHAR(255),
+        student_class VARCHAR(255),
+        password VARCHAR(255),
+        batch VARCHAR(255),
+        PRIMARY KEY (id)
+    );
+    
+    CREATE TABLE admin_accounts (
+        id INT NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255),
+        PRIMARY KEY (id)
+    );
 
+database: attendance_details
 
-CREATE TABLE student_accounts (
-    id INT NOT NULL AUTO_INCREMENT,
-    enrollment INT,
-    name VARCHAR(255),
-    student_class VARCHAR(255),
-    password VARCHAR(255),
-    PRIMARY KEY (id)
-);
+        CREATE TABLE college_details (
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        academic_year VARCHAR(10) NOT NULL,
+        department VARCHAR(100) NOT NULL,
+        semester VARCHAR(10) NOT NULL,
+        faculty_id VARCHAR(100),
+        subject_name VARCHAR(255) UNIQUE,
+        total_attendance INT  
+    );
+
