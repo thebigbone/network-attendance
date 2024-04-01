@@ -72,7 +72,7 @@ Current attendance systems are tedious and prone to error. We wanted to change t
 
 ![tech](/assets/techstack1.png)
 
-### System architecure
+### System architecture
 
 Our **first architecture** was just divided between faculty and student.
 
