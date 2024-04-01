@@ -8,7 +8,7 @@ database: wifiattendance
         password VARCHAR(255) NOT NULL,
         PRIMARY KEY (id)
     );
-    
+
     
     CREATE TABLE student_accounts (
         id INT NOT NULL AUTO_INCREMENT,
@@ -29,6 +29,12 @@ database: wifiattendance
         PRIMARY KEY (id)
     );
 
+    CREATE TABLE reset_password (
+        id INT NOT NULL,
+        password VARCHAR(255),
+        FOREIGN KEY (id) REFERENCES student_accounts(id)
+    );
+
 database: attendance_details
 
         CREATE TABLE college_details (
@@ -38,6 +44,7 @@ database: attendance_details
         semester VARCHAR(10) NOT NULL,
         faculty_id VARCHAR(100),
         subject_name VARCHAR(255) UNIQUE,
-        total_attendance INT  
+        total_attendance INT,
+        INDEX idx_faculty_id (faculty_id)  
     );
 
