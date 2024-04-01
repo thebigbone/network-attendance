@@ -70,7 +70,7 @@ Current attendance systems are tedious and prone to error. We wanted to change t
 
 ### Tech Stack
 
-![tech](/assets/techstack.png)
+![tech](/assets/techstack1.png)
 
 ### System architecure
 
