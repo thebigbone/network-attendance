@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['admin\\admin.py', 'admin\\templates\\add_student_list.html', 'admin\\templates\\add_subject_list.html', 'admin\\templates\\admin_dashboard.html', 'admin\\templates\\admin_login.html', 'admin\\templates\\admin_register.html', 'admin\\templates\\allocate_subjects.html', 'admin\\templates\\delete_subject_list.html', 'admin\\templates\\faculty_manage.html', 'admin\\templates\\filter_subjects.html', 'admin\\templates\\modify_allocated_sub.html', 'admin\\templates\\student_manage.html', 'admin\\templates\\time_table_manage.html']
+recent_files = ['admin\\admin.py', 'admin\\templates\\time_table_manage.html', 'admin\\static\\sidebar_style.css']
 
 [main]
 version = 0.2.0
