@@ -47,6 +47,7 @@ def choose():
             return redirect(url_for('student.student_login'))
     return render_template('choose.html')
 
+
 @app.errorhandler(404)
 @app.errorhandler(500)
 @app.errorhandler(505)
@@ -60,6 +61,7 @@ def handle_build_error(error):
 @app.errorhandler(TemplateNotFound)
 def template_not_found(error):
     return render_template('error.html'), 404
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

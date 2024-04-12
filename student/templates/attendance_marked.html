@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'student_base.html' %}
 
 {% block title %} Attendance Marked {% endblock %}
 
 {% block content %}
     <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-5">
-            <div class="card-header text-center">
+        <div class="card p-5 position-relative">
+            <div class="text-center underline-text">
                 <h1 class="card-title">Attendance Marked</h1>
             </div>
             <div class="card-body text-center">
@@ -15,7 +15,7 @@
                 <p>Enrollment Number: {{ enrollment }}</p>
 
                 <div class="text-center mt-4">
-                    <a href="/student/student_dashboard" class="btn btn-primary">Home</a>
+                    <a href="/student/student_dashboard" class="btn btn-primary">Home</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <a href="/student/logout" class="btn btn-primary">Logout</a>
                 </div>
             </div>

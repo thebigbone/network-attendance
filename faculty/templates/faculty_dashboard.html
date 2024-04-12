@@ -1,19 +1,22 @@
-{% extends 'base.html' %}
+{% extends 'faculty_base.html' %}
 
 {% block title %} Faculty Dashboard {% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card p-5 position-relative">
-      <div class="dropdown" style="position: absolute; top: 5px; right: 5px;">
-          <button onclick="toggleDropdown()" class="btn btn-primary">Settings</button>
-          <div class="dropdown-content" id="settingsDropdown" style="display: none;">
-            <a href="/faculty/modify_attendance">Modify Attendance</> <br>
+    <div class="dropdown" style="position: absolute; top: 15px; left: 15px;">
+        <button onclick="toggleDropdown()" class="btn btn-primary">
+            settings
+        </button>
+        <div class="dropdown-content" id="settingsDropdown" style="display: none;">
+            <a href="/faculty/modify_attendance">Modify Attendance</a><br>
             <a href="/faculty/apply_filter">Filter Download</a>
-          </div>
-      </div>
+        </div>
+    </div>
 
-      <div class="card-header text-center pt-5">
+
+      <div class="text-center pt-5 underline-text">
         <h1 class="card-title">Faculty Dashboard</h1>
       </div>
 
@@ -45,27 +48,28 @@
           </div>
 
           <input type="hidden" name="selected_subject" value="{{ session['selected_subject'] }}">
-          <button type="submit" class="btn btn-primary btn-block">Start Attendance</button>
+          <button type="submit" class="btn btn-success btn-block">Start Attendance</button>
         </form>
       </div>
     </div>
   </div>
-    <script>
-        document.querySelector('form').addEventListener('submit', function(e) {
-            var radios = document.getElementsByName('time');
-            console.log('time from the radio button: ', radios)
-            for (var i = 0; i < radios.length; i++) {
-            if (radios[i].checked) {
-                localStorage.setItem('selectedTime', radios[i].value);
-                console.log('selecting radio and storing it: ', selectedTime);
-                break;
-                }
-            }
-        });
-        </script>
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
   <script>
+  
+     document.querySelector('form').addEventListener('submit', function(e) {
+         var radios = document.getElementsByName('time');
+         console.log('time from the radio button: ', radios)
+         for (var i = 0; i < radios.length; i++) {
+         if (radios[i].checked) {
+             localStorage.setItem('selectedTime', radios[i].value);
+             console.log('selecting radio and storing it: ', selectedTime);
+             break;
+             }
+         }
+     });
+    
     var socket = io.connect('http://' + document.domain + ':' + location.port);
 
     socket.on('connect', function() {

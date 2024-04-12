@@ -43,3 +43,19 @@
 main {
     margin-left: 300px;
 }
+
+.card.p-5.position-relative {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+
+
+.underline-text {
+    border-bottom: 1px solid grey; 
+}

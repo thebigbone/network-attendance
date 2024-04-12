@@ -4,8 +4,8 @@
 
 {% block content %}
     <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-5">
-            <div class="card-header text-center">
+        <div class="card p-5 position-relative">
+            <div class="text-center underline-text">
                 <h1 class="card-title">Admin Login</h1>
             </div>
             <div class="card-body">
@@ -23,7 +23,7 @@
                     </div>
                     <button type="submit" class="btn btn-success btn-block">Login</button>
                 </form>
-                <p class="text-center mt-3">Don't have an account? <a href="{{ url_for('admin.admin_register') }}" class="btn btn-primary">Register</a></p>
+                <p class="text-center mt-3">Don't have an account? <a href="{{ url_for('admin.admin_register') }}" class="text-primary">Register</a></p>
             </div>
         </div>
     </div>

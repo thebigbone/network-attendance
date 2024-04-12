@@ -3,8 +3,7 @@ from database import mysql
 from admin.admin import send_email, generate_random_string
 
 
-student = Blueprint("student", __name__,
-                    static_folder="static", template_folder="templates")
+student = Blueprint("student", __name__,static_folder="static", template_folder="templates")
 '''
 # Student registration page
 @student.route('/student_register', methods=['GET', 'POST'])

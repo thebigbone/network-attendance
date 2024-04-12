@@ -1,19 +1,114 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Role</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f2f2f2; 
+    }
     
-{% block title %} Choose Your Role {% endblock %}
-
-{% block content %}
-    <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-5">
-            <div class="card-header text-center">
-                <h1 class="card-title">Choose Your Role</h1>
-            </div>
-            <div class="card-body">
+    .container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .title {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: #2c3e50; 
+    }
+    
+    .subtitle {
+        font-size: 1.2em;
+        color: #666;
+    }
+    
+    .role-selection {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .role {
+        width: 45%;
+        padding: 20px;
+        margin: 0 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 230px; 
+    }
+    
+    .role-title {
+        text-align: center;
+        font-size: 1.7em;
+        color: #2c3e50; 
+        margin-bottom: 0; /* Remove margin-bottom */
+    }
+    
+    .role-description {
+        color: #666;
+        margin-bottom: 10px;
+        line-height: 1.5; 
+        text-align: center;
+    }
+    
+    .btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        font-size: 1em;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+    }
+    
+    .btn-secondary {
+        background-color: #149a80; 
+    }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Network Attendance</h1>
+            <p class="subtitle">Select your role to get started!</p>
+        </div>
+        <div class="role-selection">
+            <div class="role">
+                <h2 class="role-title">Faculty</h2>
+                <p class="role-description">Are you an educator or staff member?<br>Join us to access tools for managing classes, tracking attendance, and more.</p>
                 <form action="{{ url_for('choose') }}" method="post">
-                    <button name="role" value="faculty" class="btn btn-primary btn-block mb-3">Faculty</button>
-                    <button name="role" value="student" class="btn btn-secondary btn-block">Student</button>
+                    <button name="role" value="faculty" class="btn btn-secondary">I'm a Faculty</button>
+                </form>
+            </div>
+            <div class="role">
+                <h2 class="role-title">Student</h2>
+                <p class="role-description">Ready to track your attendance?<br>Log in as a student to submit attendance and track your progress.</p>
+                <form action="{{ url_for('choose') }}" method="post">
+                    <button name="role" value="student" class="btn btn-secondary">I'm a Student</button>
                 </form>
             </div>
         </div>
     </div>
-{% endblock %}
+</body>
+</html>

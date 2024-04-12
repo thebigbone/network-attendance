@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'faculty_base.html' %}
 
 {% block title %} Apply Filter {% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card p-5 position-relative">
-      <div class="card-header text-center">
+      <div class="text-center underline-text">
         <h1 class="card-title">Add Filters</h1>
       </div>
 
@@ -34,8 +34,11 @@
             <label for="percentage" class="font-weight-bold">Attendance Percentage:</label>
             <input type="number" name="percentage" class="form-control" min="0" max="100" required />
           </div>
+          <div class="text-center mt-4">
+              <a href="/faculty/faculty_dashboard" class="btn btn-primary">Home</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="submit" class="btn btn-success">Apply Filter</button>
+          </div>
           
-          <button type="submit" class="btn btn-success btn-block" id="filtered_databtn">Apply Filter</button>
         </form>
       </div>
     </div>

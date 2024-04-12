@@ -3,9 +3,7 @@ import pandas as pd
 import secrets, io
 from database import mysql
 
-
-faculty = Blueprint("faculty", __name__ , static_folder="static", template_folder="templates")
-
+faculty = Blueprint("faculty", __name__, static_folder="static", template_folder="templates")
 
 
 '''
@@ -42,25 +40,22 @@ def faculty_register():
 # Faculty login page
 @faculty.route('/faculty_login', methods=['GET', 'POST'])
 def faculty_login():
-    if 'faculty_id' in session:
-        return redirect(url_for('faculty.faculty_dashboard'))
-    else:
-        msg = ''
-        if request.method == 'POST' and 'faculty_id' in request.form and 'password' in request.form:
-            faculty_id = request.form['faculty_id']
-            password = request.form['password']
+    msg = ''
+    if request.method == 'POST' and 'faculty_id' in request.form and 'password' in request.form:
+        faculty_id = request.form['faculty_id']
+        password = request.form['password']
+        
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM wifiattendance.faculty_accounts WHERE faculty_id = %s AND password = %s", (faculty_id, password))
+        account = cursor.fetchone()
+        cursor.close()
+        
+        if account:
+            session['faculty_id'] = faculty_id
             
-            cursor = mysql.connection.cursor()
-            cursor.execute("SELECT * FROM wifiattendance.faculty_accounts WHERE faculty_id = %s AND password = %s", (faculty_id, password))
-            account = cursor.fetchone()
-            cursor.close()
-            
-            if account:
-                session['faculty_id'] = faculty_id
-                
-                return redirect(url_for('faculty.faculty_dashboard'))
-            else:
-                msg = 'Incorrect faculty ID or password!'
+            return redirect(url_for('faculty.faculty_dashboard'))
+        else:
+            msg = 'Incorrect faculty ID or password!'
     return render_template('faculty_login.html', msg=msg)
 
 # Faculty dashboard
