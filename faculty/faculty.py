@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 import pandas as pd
 import secrets, io
 from database import mysql
+from admin.admin import send_email, generate_random_string
+from internal.reset_password import get_user_id, save_reset_token, send_reset_email, check_reset_token, update_password, delete_reset_token
 
 faculty = Blueprint("faculty", __name__, static_folder="static", template_folder="templates")
 
@@ -375,6 +377,62 @@ def filter_download():
     else:
         return redirect(url_for('faculty.faculty_login'))
 
+@faculty.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST' and 'email' in request.form:
+        email = request.form["email"]
+        
+        table_name = "faculty_accounts"
+        identifier = "id"
+        user_id = get_user_id(email, table_name, identifier)
+        
+        if user_id:
+            session['user_id'] = user_id
+            print("user session: ", session.get('user_id'))
+            
+            secret_token = generate_random_string(8)
+            save_reset_token(user_id, secret_token)
+            
+            send_reset_email(email, secret_token)
+            return redirect(url_for('faculty.reset_password'))
+        else:
+            msg = 'User not found. Try entering again!' 
+            return render_template('forgot_password.html', msg=msg)
+        
+    return render_template('forgot_password.html')
+
+@faculty.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST' and 'token' in request.form:
+        token = request.form["token"]
+        
+        user_id = session.get('user_id')
+        result = check_reset_token(token)
+        
+        if result:
+            return redirect(url_for('faculty.change_password'))
+        else:
+            msg = 'Invalid token. Try entering again!'
+            return render_template('reset_password.html', msg=msg)
+            
+    return render_template('reset_password.html')
+        
+@faculty.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    msg = ''
+    if request.method == 'POST' and 'password' in request.form:
+        new_password = request.form["password"]
+        user_id = session.get('user_id')
+        
+        table_name = "faculty_accounts"
+        update_password(user_id, new_password, table_name)
+        delete_reset_token(user_id)
+        
+        msg = 'Password updated successfully!'
+        session.pop('user_id')
+        return render_template('change_password.html', msg=msg)
+    
+    return render_template('change_password.html')
 
 #LOG OUT
 @faculty.route('/logout', methods=['GET', 'POST'])
