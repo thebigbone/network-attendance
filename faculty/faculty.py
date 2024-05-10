@@ -398,9 +398,9 @@ def forgot_password():
             return redirect(url_for('faculty.reset_password'))
         else:
             msg = 'User not found. Try entering again!' 
-            return render_template('forgot_password.html', msg=msg)
+            return render_template('forgot_password_faculty.html', msg=msg)
         
-    return render_template('forgot_password.html')
+    return render_template('forgot_password_faculty.html')
 
 @faculty.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
@@ -414,9 +414,9 @@ def reset_password():
             return redirect(url_for('faculty.change_password'))
         else:
             msg = 'Invalid token. Try entering again!'
-            return render_template('reset_password.html', msg=msg)
+            return render_template('reset_password_faculty.html', msg=msg)
             
-    return render_template('reset_password.html')
+    return render_template('reset_password_faculty.html')
         
 @faculty.route('/change_password', methods=['GET', 'POST'])
 def change_password():
@@ -431,9 +431,9 @@ def change_password():
         
         msg = 'Password updated successfully!'
         session.pop('user_id')
-        return render_template('change_password.html', msg=msg)
+        return render_template('change_password_faculty.html', msg=msg)
     
-    return render_template('change_password.html')
+    return render_template('change_password_faculty.html')
 
 #LOG OUT
 @faculty.route('/logout', methods=['GET', 'POST'])
