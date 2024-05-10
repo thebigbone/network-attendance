@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['faculty\\templates\\faculty_dashboard.html', 'faculty\\faculty.py', 'faculty\\static\\style.css']
+recent_files = ['app.py', 'admin\\admin.py', 'faculty\\faculty.py', 'student\\student.py']
 
 [main]
 version = 0.2.0

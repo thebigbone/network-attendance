@@ -244,7 +244,7 @@ def modify_attendance():
                 mysql.connection.commit()
                 
                 if cursor.rowcount > 0:
-                    msg='Record Updated successfully!!!'
+                    msg='Record Updated successfully!!!' 
                 else:
                     msg='No records updated. Please try again.'
                 
@@ -270,13 +270,14 @@ def modify_attendance():
                 percentage = (total_presents / (len(all_columns) - 4)) * 100
                     
                 # Add percentage in the column
-                update_query = f"UPDATE attedance_details.{modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
+                update_query = f"UPDATE attendance_details.{modify_subject} SET percentage = {percentage} WHERE enrollment = {enrollment}"
                 cursor.execute(update_query)
                 
                 mysql.connection.commit()
                 cursor.close()
                     
-            except Exception:
+            except Exception as e:
+                print(e)
                 msg = 'Error updating records: Date or Enrollment does not exist.'
             
         

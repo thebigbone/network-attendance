@@ -3,10 +3,12 @@ from admin.admin import send_email, generate_random_string
 
 def get_user_id(email, table_name, identifier):
     cursor = mysql.connection.cursor()
+    print(email,table_name,identifier)
     sql = f"SELECT {identifier} FROM wifiattendance.{table_name} where email = '{email}';"
     cursor.execute(sql)
     user_id = cursor.fetchone()
     cursor.close()
+    print("User_id",user_id)
     return user_id[0] if user_id else None
 
 def save_reset_token(user_id, secret_token):
