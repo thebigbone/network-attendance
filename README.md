@@ -12,6 +12,13 @@
 - Linux or Windows
 - MySQL
 
+### Demo Video
+
+![Admin Panel](/assets/Admin_Panel.gif)
+
+![Faculty-Student Panel](/assets/FacultyStudent_Panel.gif)
+
+
 ### Installation
 
 #### Manual Install
